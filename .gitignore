@@ -30,3 +30,6 @@ pytest-*
 
 # Logs
 *.log
+
+# Ruff
+.ruff_cache/
