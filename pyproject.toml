@@ -1,0 +1,32 @@
+[project]
+name = "accountant"
+version = "0.1.0"
+description = "Accountant Telegram Bot"
+readme = "README.md"
+requires-python = ">=3.14"
+dependencies = [
+    "python-telegram-bot>=22.1",
+    "pydantic>=2.7.1",
+    "pydantic-settings>=2.2.1",
+]
+
+[tool.mypy]
+python_version = '3.14'
+disallow_any_unimported = false
+warn_return_any = false
+warn_unused_configs = true
+ignore_missing_imports = true
+no_implicit_optional = true
+show_error_codes = true
+disallow_untyped_defs = true
+strict_equality = true
+warn_unused_ignores = true
+warn_redundant_casts = true
+warn_unreachable = true
+mypy_path = './stubs'
+
+[tool.ruff]
+line-length = 120
+
+[tool.ruff.lint]
+extend-select = ["B"]
