@@ -2,8 +2,8 @@ import logging
 
 from telegram.ext import ApplicationBuilder
 
-from accountant.config import TELEGRAM_BOT_TOKEN, get_logging_level
-from accountant.handlers import register_handlers
+from accountant_bot.config import TELEGRAM_BOT_TOKEN, get_logging_level
+from accountant_bot.handlers import register_handlers
 
 logging.basicConfig(level=get_logging_level())
 

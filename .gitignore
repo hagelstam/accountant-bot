@@ -28,8 +28,13 @@ pytest-*
 .vscode/
 .idea/
 
+# Dev
+.mypy_cache/
+.ruff_cache/
+
 # Logs
 *.log
 
-# Ruff
-.ruff_cache/
+# Coverage
+.coverage
+coverage.xml

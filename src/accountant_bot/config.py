@@ -10,7 +10,7 @@ class Config(BaseSettings):
     model_config = SettingsConfigDict(env_file=".env", env_file_encoding="utf-8", extra="ignore")
 
 
-config = Config()  # type: ignore
+config = Config()  # type: ignore[call-arg]
 
 TELEGRAM_BOT_TOKEN = config.telegram_bot_token
 LOGGING_LEVEL = config.logging_level
