@@ -52,3 +52,5 @@ jobs:
         with:
           token: ${{ github.token }}
           planfile: tfplan
+          working-directory: infra/env/prod
+          skip-empty: true
