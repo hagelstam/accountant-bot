@@ -44,7 +44,7 @@ jobs:
 
       - name: Plan
         id: plan
-        run: terraform plan -out=tfplan
+        run: terraform plan -no-color
         continue-on-error: true
 
       - name: Comment PR
@@ -52,7 +52,7 @@ jobs:
         with:
           github-token: ${{ secrets.GITHUB_TOKEN }}
           script: |
-            const output = `#### Terraform plan \`${{ steps.plan.outcome }}\`
+            const output = `### Terraform plan \`${{ steps.plan.outcome }}\`
 
             <details><summary>Show plan</summary>
 
