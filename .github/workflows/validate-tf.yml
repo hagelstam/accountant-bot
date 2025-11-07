@@ -1,0 +1,52 @@
+name: Validate Terraform
+
+on:
+  pull_request:
+    branches: ['*']
+    paths:
+      - 'infra/**'
+
+permissions:
+  id-token: write
+  pull-requests: write
+  contents: read
+
+defaults:
+  run:
+    shell: bash
+    working-directory: infra/env/prod
+
+jobs:
+  validate:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v5
+
+      - name: Setup Terraform
+        uses: hashicorp/setup-terraform@v3
+        with:
+          terraform_version: 1.13.5
+
+      - name: Configure AWS credentials
+        uses: aws-actions/configure-aws-credentials@v5
+        with:
+          role-to-assume: arn:aws:iam::747683189254:role/deployer
+          aws-region: eu-north-1
+
+      - name: Init
+        run: terraform init
+
+      - name: Format check
+        run: terraform fmt -check
+
+      - name: Validate
+        run: terraform validate
+
+      - name: Plan
+        run: terraform plan -out=tfplan
+
+      - name: Post PR comment
+        uses: borchero/terraform-plan-comment@v2
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+          planfile: .tfplan

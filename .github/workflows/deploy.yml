@@ -9,14 +9,15 @@ permissions:
   id-token: write
   contents: read
 
+defaults:
+  run:
+    shell: bash
+    working-directory: infra/env/prod
+
 jobs:
   deploy:
     runs-on: ubuntu-latest
     environment: prod
-    defaults:
-      run:
-        shell: bash
-        working-directory: infra/env/prod
 
     steps:
       - uses: actions/checkout@v5
