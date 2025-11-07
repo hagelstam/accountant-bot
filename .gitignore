@@ -38,3 +38,10 @@ pytest-*
 # Coverage
 .coverage
 coverage.xml
+
+# Terraform
+.terraform/
+.terraform.lock.hcl
+terraform.tfstate
+terraform.tfstate.backup
+terraform.tfvars
