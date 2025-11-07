@@ -15,7 +15,7 @@ updates:
 
   # Terraform
   - package-ecosystem: 'terraform'
-    directory: '/infra'
+    directory: '/infra/env/prod'
     schedule:
       interval: 'weekly'
     labels:
