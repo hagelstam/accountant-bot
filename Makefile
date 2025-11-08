@@ -1,10 +1,3 @@
-PROJECT_NAME   := accountant-bot
-AWS_REGION     := eu-north-1
-AWS_ACCOUNT_ID := 747683189254
-ECR_REPOSITORY := $(PROJECT_NAME)-prod
-TERRAFORM_DIR  := infra/env/prod
-IMAGE_TAG      ?= v$(shell date +%Y%m%d)-$(shell git rev-parse --short HEAD)
-
 .PHONY: install
 install:
 	@uv sync
@@ -23,3 +16,7 @@ check:
 .PHONY: test
 test:
 	@uv run python -m pytest --cov --cov-config=pyproject.toml --cov-report=xml
+
+.PHONY: format
+format:
+	@uv run ruff format

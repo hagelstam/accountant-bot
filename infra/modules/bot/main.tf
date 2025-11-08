@@ -130,8 +130,10 @@ resource "aws_lambda_function" "bot" {
 
   environment {
     variables = {
-      TELEGRAM_BOT_TOKEN = var.telegram_bot_token
-      LOGGING_LEVEL      = "INFO"
+      TELEGRAM_BOT_TOKEN      = var.telegram_bot_token
+      GOOGLE_CREDENTIALS_JSON = var.google_credentials_json
+      GOOGLE_SPREADSHEET_ID   = var.google_spreadsheet_id
+      LOGGING_LEVEL           = "INFO"
     }
   }
 
