@@ -32,12 +32,13 @@ runs:
         file: ./Dockerfile
         platforms: linux/amd64
         push: ${{ inputs.push }}
-        load: true
         tags: |
           ${{ steps.login-ecr.outputs.registry }}/${{ inputs.repository }}:${{ inputs.tag }}
           ${{ steps.login-ecr.outputs.registry }}/${{ inputs.repository }}:latest
         cache-from: type=gha
         cache-to: type=gha,mode=max
+        provenance: false
+        sbom: false
 
     - name: Scan image for vulnerabilities
       if: inputs.scan == 'true'
