@@ -52,12 +52,15 @@ runs:
     - name: Plan
       id: plan
       run: |
-        terraform plan \
-          -var="telegram_bot_token=${{ inputs.telegram-bot-token }}" \
-          -var="google_credentials_json=${{ inputs.google-credentials-json }}" \
-          -var="google_spreadsheet_id=${{ inputs.google-spreadsheet-id }}" \
-          -var="image_tag=${{ inputs.image-tag }}" \
-          -out=tfplan
+        cat > terraform.tfvars.json <<EOF
+        {
+          "telegram_bot_token": "${{ inputs.telegram-bot-token }}",
+          "google_credentials_json": $(echo '${{ inputs.google-credentials-json }}' | jq -Rs .),
+          "google_spreadsheet_id": "${{ inputs.google-spreadsheet-id }}",
+          "image_tag": "${{ inputs.image-tag }}"
+        }
+        EOF
+        terraform plan -out=tfplan
       shell: bash
       working-directory: ${{ inputs.directory }}
       continue-on-error: ${{ inputs.plan-comment == 'true' }}
