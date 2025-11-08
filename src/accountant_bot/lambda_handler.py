@@ -23,8 +23,11 @@ async def process_update(event: dict[str, Any]) -> dict[str, Any]:
         update = Update.de_json(update_data, application.bot)
         if update:
             await application.initialize()
-            await application.process_update(update)
-            logger.info(f"Successfully processed update {update.update_id}")
+            try:
+                await application.process_update(update)
+                logger.info(f"Successfully processed update {update.update_id}")
+            finally:
+                await application.shutdown()
         else:
             logger.warning("Received invalid update")
 
@@ -51,5 +54,4 @@ def lambda_handler(event: dict[str, Any], context: Any) -> dict[str, Any]:
 
     logger.info(f"Received event: {json.dumps(event)}")
 
-    loop = asyncio.get_event_loop()
-    return loop.run_until_complete(process_update(event))
+    return asyncio.run(process_update(event))
