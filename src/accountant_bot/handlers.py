@@ -10,7 +10,7 @@ logger = logging.getLogger(__name__)
 
 async def start(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
     """Handle the /start command"""
-    if update.effective_user:
+    if update.effective_user and update.message:
         user = update.effective_user
         logger.info(f"User {user.id} ({user.username}) started the bot")
 
