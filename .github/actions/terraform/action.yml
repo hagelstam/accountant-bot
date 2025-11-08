@@ -13,6 +13,9 @@ inputs:
     description: 'Post PR comment with Terraform plan'
     required: false
     default: 'true'
+  image-tag:
+    description: 'Docker image tag'
+    required: true
 
 runs:
   using: 'composite'
@@ -39,7 +42,11 @@ runs:
 
     - name: Plan
       id: plan
-      run: terraform plan -out=tfplan
+      run: |
+        terraform plan \
+          -var="telegram_bot_token=${{ secrets.TELEGRAM_BOT_TOKEN }}" \
+          -var="image_tag=${{ inputs.image-tag }}" \
+          -out=tfplan
       shell: bash
       working-directory: ${{ inputs.directory }}
       continue-on-error: ${{ inputs.plan-comment == 'true' }}
