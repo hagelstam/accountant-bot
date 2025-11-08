@@ -31,11 +31,6 @@ jobs:
       - name: Run tests
         run: make test
 
-      # - name: Upload coverage report
-      #   uses: codecov/codecov-action@v5
-      #   env:
-      #     CODECOV_TOKEN: ${{ secrets.CODECOV_TOKEN }}
-
   build-push:
     runs-on: ubuntu-24.04
     needs: [lint, test]

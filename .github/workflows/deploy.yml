@@ -4,11 +4,6 @@ on:
   push:
     branches: ['main']
   workflow_call:
-    inputs:
-      image_tag:
-        description: 'Docker image tag to deploy'
-        required: false
-        type: string
 
 permissions:
   id-token: write
@@ -39,6 +34,11 @@ jobs:
 
       - name: Run tests
         run: make test
+
+      - name: Upload coverage report
+        uses: codecov/codecov-action@v5
+        env:
+          CODECOV_TOKEN: ${{ secrets.CODECOV_TOKEN }}
 
   build-push:
     runs-on: ubuntu-24.04
