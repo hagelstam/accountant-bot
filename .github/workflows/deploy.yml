@@ -5,44 +5,21 @@ on:
     branches: ['main']
   workflow_call:
 
-permissions:
-  id-token: write
-  contents: read
-
 env:
   AWS_REGION: eu-north-1
 
 jobs:
-  lint:
-    runs-on: ubuntu-24.04
-    steps:
-      - uses: actions/checkout@v5
-
-      - name: Bootstrap
-        uses: ./.github/actions/bootstrap
-
-      - name: Run checks
-        run: make check
-
   test:
     runs-on: ubuntu-24.04
     steps:
       - uses: actions/checkout@v5
-
-      - name: Bootstrap
-        uses: ./.github/actions/bootstrap
-
-      - name: Run tests
-        run: make test
-
-      - name: Upload coverage report
-        uses: codecov/codecov-action@v5
-        env:
-          CODECOV_TOKEN: ${{ secrets.CODECOV_TOKEN }}
+      - uses: ./.github/actions/test
+        with:
+          codecov-token: ${{ secrets.CODECOV_TOKEN }}
 
   build-push:
     runs-on: ubuntu-24.04
-    needs: [lint, test]
+    needs: [test]
     environment: prod
 
     permissions:
@@ -66,7 +43,7 @@ jobs:
           push: true
           scan: false
 
-  apply:
+  deploy:
     runs-on: ubuntu-24.04
     needs: [build-push]
     environment: prod
@@ -84,11 +61,11 @@ jobs:
           role-to-assume: arn:aws:iam::747683189254:role/deployer
           aws-region: ${{ env.AWS_REGION }}
 
-      - name: Apply
+      - name: Deploy
         uses: ./.github/actions/terraform
         with:
           directory: infra/env/prod
           apply: true
           plan-comment: false
-          image-tag: ${{ inputs.image_tag || github.sha }}
+          image-tag: ${{ github.sha }}
           telegram-bot-token: ${{ secrets.TELEGRAM_BOT_TOKEN }}

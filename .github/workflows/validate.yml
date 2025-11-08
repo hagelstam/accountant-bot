@@ -9,31 +9,17 @@ env:
   AWS_REGION: eu-north-1
 
 jobs:
-  lint:
-    runs-on: ubuntu-24.04
-    steps:
-      - uses: actions/checkout@v5
-
-      - name: Bootstrap
-        uses: ./.github/actions/bootstrap
-
-      - name: Run checks
-        run: make check
-
   test:
     runs-on: ubuntu-24.04
     steps:
       - uses: actions/checkout@v5
-
-      - name: Bootstrap
-        uses: ./.github/actions/bootstrap
-
-      - name: Run tests
-        run: make test
+      - uses: ./.github/actions/test
+        with:
+          codecov-token: ${{ secrets.CODECOV_TOKEN }}
 
   build-push:
     runs-on: ubuntu-24.04
-    needs: [lint, test]
+    needs: [test]
 
     permissions:
       id-token: write
