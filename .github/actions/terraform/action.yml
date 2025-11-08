@@ -16,6 +16,9 @@ inputs:
   image-tag:
     description: 'Docker image tag'
     required: true
+  telegram-bot-token:
+    description: 'Telegram bot token'
+    required: true
 
 runs:
   using: 'composite'
@@ -44,7 +47,7 @@ runs:
       id: plan
       run: |
         terraform plan \
-          -var="telegram_bot_token=${{ secrets.TELEGRAM_BOT_TOKEN }}" \
+          -var="telegram_bot_token=${{ inputs.telegram-bot-token }}" \
           -var="image_tag=${{ inputs.image-tag }}" \
           -out=tfplan
       shell: bash

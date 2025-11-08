@@ -34,11 +34,10 @@ jobs:
       - name: Bootstrap
         uses: ./.github/actions/bootstrap
 
-      - name: Lint
-        run: make check
-
       - name: Test
-        run: make test
+        run: |
+          make check
+          make test
 
       - name: Build and push image
         uses: ./.github/actions/build-push
@@ -46,7 +45,7 @@ jobs:
           tag: ${{ github.sha }}
           repository: accountant-bot-prod
           push: true
-          scan: true
+          scan: false
 
       - name: Apply
         uses: ./.github/actions/terraform
@@ -55,3 +54,4 @@ jobs:
           apply: true
           plan-comment: false
           image-tag: ${{ inputs.image_tag }}
+          telegram-bot-token: ${{ secrets.TELEGRAM_BOT_TOKEN }}

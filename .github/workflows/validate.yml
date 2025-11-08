@@ -86,3 +86,4 @@ jobs:
           plan-comment: true
           apply: false
           image-tag: ${{ github.sha }}
+          telegram-bot-token: ${{ secrets.TELEGRAM_BOT_TOKEN }}
