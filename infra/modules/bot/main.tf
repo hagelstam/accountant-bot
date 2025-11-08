@@ -125,9 +125,8 @@ resource "aws_lambda_function" "bot" {
   image_uri     = "${aws_ecr_repository.bot.repository_url}:${var.image_tag}"
   architectures = ["x86_64"]
 
-  memory_size                    = 512
-  timeout                        = 30
-  reserved_concurrent_executions = 10
+  memory_size = 512
+  timeout     = 30
 
   environment {
     variables = {
