@@ -58,10 +58,10 @@ jobs:
         with:
           tag: ${{ github.sha }}
           repository: accountant-bot-prod
-          push: false
-          scan: false
+          push: true
+          scan: true
 
-  terraform:
+  plan:
     runs-on: ubuntu-latest
     needs: [build-push]
 
@@ -79,9 +79,10 @@ jobs:
           role-to-assume: arn:aws:iam::747683189254:role/deployer
           aws-region: ${{ env.AWS_REGION }}
 
-      - name: Terraform
+      - name: Plan
         uses: ./.github/actions/terraform
         with:
           directory: infra/env/prod
           plan-comment: true
           apply: false
+          image-tag: ${{ github.sha }}

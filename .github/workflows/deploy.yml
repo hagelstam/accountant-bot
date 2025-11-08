@@ -1,27 +1,18 @@
 name: Deploy
 
 on:
-  workflow_dispatch:
-    inputs:
-      image_tag:
-        description: 'Docker image tag to deploy (e.g., v20240101-abc1234)'
-        required: true
-        type: string
+  push:
+    branches: ['main']
   workflow_call:
     inputs:
       image_tag:
         description: 'Docker image tag to deploy'
-        required: true
+        required: false
         type: string
 
 permissions:
   id-token: write
   contents: read
-
-defaults:
-  run:
-    shell: bash
-    working-directory: infra/env/prod
 
 env:
   AWS_REGION: eu-north-1
@@ -32,8 +23,7 @@ jobs:
     environment: prod
 
     steps:
-      - name: Checkout code
-        uses: actions/checkout@v5
+      - uses: actions/checkout@v5
 
       - name: Configure AWS credentials
         uses: aws-actions/configure-aws-credentials@v5
@@ -41,54 +31,27 @@ jobs:
           role-to-assume: arn:aws:iam::747683189254:role/deployer
           aws-region: ${{ env.AWS_REGION }}
 
-      - name: Setup Terraform
-        uses: hashicorp/setup-terraform@v3
+      - name: Bootstrap
+        uses: ./.github/actions/bootstrap
+
+      - name: Lint
+        run: make check
+
+      - name: Test
+        run: make test
+
+      - name: Build and push image
+        uses: ./.github/actions/build-push
         with:
-          terraform_version: 1.13.5
-          terraform_wrapper: false
+          tag: ${{ github.sha }}
+          repository: accountant-bot-prod
+          push: true
+          scan: true
 
-      - name: Terraform Init
-        run: terraform init
-
-      - name: Terraform Plan
-        id: plan
-        run: |
-          terraform plan \
-            -var="image_tag=${{ inputs.image_tag }}" \
-            -var="telegram_bot_token=${{ secrets.TELEGRAM_BOT_TOKEN }}" \
-            -var="telegram_secret_token=${{ secrets.TELEGRAM_SECRET_TOKEN }}" \
-            -out=tfplan
-
-      - name: Terraform Apply
-        run: terraform apply -auto-approve tfplan
-
-      - name: Get outputs
-        id: outputs
-        run: |
-          WEBHOOK_URL=$(terraform output -raw webhook_url)
-          echo "webhook-url=${WEBHOOK_URL}" >> $GITHUB_OUTPUT
-          echo "Webhook URL: ${WEBHOOK_URL}"
-
-      - name: Setup webhook
-        run: |
-          # Install dependencies
-          pip install python-telegram-bot pydantic pydantic-settings
-
-          # Run webhook setup script
-          export TELEGRAM_BOT_TOKEN="${{ secrets.TELEGRAM_BOT_TOKEN }}"
-          export TELEGRAM_SECRET_TOKEN="${{ secrets.TELEGRAM_SECRET_TOKEN }}"
-          python ../../../scripts/setup_webhook.py set --url "${{ steps.outputs.outputs.webhook-url }}"
-
-      - name: Deployment summary
-        run: |
-          echo "## 🚀 Deployment Successful" >> $GITHUB_STEP_SUMMARY
-          echo "" >> $GITHUB_STEP_SUMMARY
-          echo "### Deployment Details" >> $GITHUB_STEP_SUMMARY
-          echo "- **Image Tag**: \`${{ inputs.image_tag }}\`" >> $GITHUB_STEP_SUMMARY
-          echo "- **Webhook URL**: \`${{ steps.outputs.outputs.webhook-url }}\`" >> $GITHUB_STEP_SUMMARY
-          echo "- **Environment**: \`prod\`" >> $GITHUB_STEP_SUMMARY
-          echo "" >> $GITHUB_STEP_SUMMARY
-          echo "### Next Steps" >> $GITHUB_STEP_SUMMARY
-          echo "1. Test the bot by sending it a message on Telegram" >> $GITHUB_STEP_SUMMARY
-          echo "2. Monitor logs: \`make logs\`" >> $GITHUB_STEP_SUMMARY
-          echo "3. Check webhook status: \`make webhook-info\`" >> $GITHUB_STEP_SUMMARY
+      - name: Apply
+        uses: ./.github/actions/terraform
+        with:
+          directory: infra/env/prod
+          apply: true
+          plan-comment: false
+          image-tag: ${{ inputs.image_tag }}
