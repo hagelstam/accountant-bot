@@ -10,7 +10,7 @@ env:
 
 jobs:
   lint:
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     steps:
       - uses: actions/checkout@v5
 
@@ -21,7 +21,7 @@ jobs:
         run: make check
 
   test:
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     steps:
       - uses: actions/checkout@v5
 
@@ -37,7 +37,7 @@ jobs:
       #     CODECOV_TOKEN: ${{ secrets.CODECOV_TOKEN }}
 
   build-push:
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     needs: [lint, test]
 
     permissions:
@@ -62,7 +62,7 @@ jobs:
           scan: true
 
   plan:
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     needs: [build-push]
 
     permissions:
