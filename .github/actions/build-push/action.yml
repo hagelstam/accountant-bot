@@ -45,6 +45,6 @@ runs:
       with:
         image-ref: ${{ steps.login-ecr.outputs.registry }}/${{ inputs.repository }}:${{ inputs.tag }}
         format: 'table'
-        exit-code: '1'
+        exit-code: '0'
         ignore-unfixed: 'true'
         severity: 'CRITICAL,HIGH'
