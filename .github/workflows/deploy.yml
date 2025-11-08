@@ -18,9 +18,36 @@ env:
   AWS_REGION: eu-north-1
 
 jobs:
-  deploy:
+  lint:
     runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@v5
+
+      - name: Bootstrap
+        uses: ./.github/actions/bootstrap
+
+      - name: Run checks
+        run: make check
+
+  test:
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@v5
+
+      - name: Bootstrap
+        uses: ./.github/actions/bootstrap
+
+      - name: Run tests
+        run: make test
+
+  build-push:
+    runs-on: ubuntu-24.04
+    needs: [lint, test]
     environment: prod
+
+    permissions:
+      id-token: write
+      contents: read
 
     steps:
       - uses: actions/checkout@v5
@@ -31,14 +58,6 @@ jobs:
           role-to-assume: arn:aws:iam::747683189254:role/deployer
           aws-region: ${{ env.AWS_REGION }}
 
-      - name: Bootstrap
-        uses: ./.github/actions/bootstrap
-
-      - name: Test
-        run: |
-          make check
-          make test
-
       - name: Build and push image
         uses: ./.github/actions/build-push
         with:
@@ -46,6 +65,24 @@ jobs:
           repository: accountant-bot-prod
           push: true
           scan: false
+
+  apply:
+    runs-on: ubuntu-24.04
+    needs: [build-push]
+    environment: prod
+
+    permissions:
+      id-token: write
+      contents: read
+
+    steps:
+      - uses: actions/checkout@v5
+
+      - name: Configure AWS credentials
+        uses: aws-actions/configure-aws-credentials@v5
+        with:
+          role-to-assume: arn:aws:iam::747683189254:role/deployer
+          aws-region: ${{ env.AWS_REGION }}
 
       - name: Apply
         uses: ./.github/actions/terraform
