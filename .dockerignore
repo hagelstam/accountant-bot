@@ -1,11 +1,26 @@
+# Environment and secrets
 .env
+.env.*
+*.key
+*.pem
+*.crt
+
+# Version control
 .git
 .gitignore
 .github
 .cursorrules
+
+# Documentation
 README.md
+*.md
+LICENSE
+
+# Build files
 Dockerfile
 .dockerignore
+
+# Python cache and artifacts
 __pycache__
 *.pyc
 *.pyo
@@ -13,6 +28,8 @@ __pycache__
 .Python
 pip-log.txt
 pip-delete-this-directory.txt
+
+# Testing and coverage
 .tox
 .coverage
 .coverage.*
@@ -20,11 +37,24 @@ pip-delete-this-directory.txt
 nosetests.xml
 coverage.xml
 *.cover
-*.log
-.mypy_cache
 .pytest_cache
-.ruff_cache
+
+# Linting and type checking
 .mypy_cache
-.coverage
-coverage.xml
+.ruff_cache
+
+# Logs
+*.log
+
+# Infrastructure
 infra/
+
+# Scripts
+scripts/
+
+# Tests
+tests/
+
+# Development
+Makefile
+.DS_Store
