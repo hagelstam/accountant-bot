@@ -19,6 +19,12 @@ inputs:
   telegram-bot-token:
     description: 'Telegram bot token'
     required: true
+  google-credentials-json:
+    description: 'Google credentials JSON'
+    required: true
+  google-spreadsheet-id:
+    description: 'Google spreadsheet ID'
+    required: true
 
 runs:
   using: 'composite'
@@ -48,6 +54,8 @@ runs:
       run: |
         terraform plan \
           -var="telegram_bot_token=${{ inputs.telegram-bot-token }}" \
+          -var="google_credentials_json=${{ inputs.google-credentials-json }}" \
+          -var="google_spreadsheet_id=${{ inputs.google-spreadsheet-id }}" \
           -var="image_tag=${{ inputs.image-tag }}" \
           -out=tfplan
       shell: bash

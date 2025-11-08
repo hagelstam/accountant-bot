@@ -68,3 +68,5 @@ jobs:
           apply: false
           image-tag: ${{ github.sha }}
           telegram-bot-token: ${{ secrets.TELEGRAM_BOT_TOKEN }}
+          google-credentials-json: ${{ secrets.GOOGLE_CREDENTIALS_JSON }}
+          google-spreadsheet-id: ${{ secrets.GOOGLE_SPREADSHEET_ID }}
