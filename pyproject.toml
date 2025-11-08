@@ -3,7 +3,6 @@ name = "accountant-bot"
 version = "0.1.0"
 description = "Telegram bot for accounting"
 authors = [{ name = "Maximilian Hagelstam" }]
-readme = "README.md"
 requires-python = ">=3.14"
 classifiers = [
     "Programming Language :: Python :: 3.14",
