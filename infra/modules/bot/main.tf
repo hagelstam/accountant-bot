@@ -3,7 +3,7 @@ data "aws_region" "current" {}
 
 locals {
   project_name = "accountant-bot"
-  name_prefix  = "${project_name}-${var.environment}"
+  name_prefix  = "${local.project_name}-${var.environment}"
   common_tags  = var.tags
 
   # Telegram IP ranges for security
@@ -131,7 +131,6 @@ resource "aws_lambda_function" "bot" {
   environment {
     variables = {
       TELEGRAM_BOT_TOKEN = var.telegram_bot_token
-      WEBHOOK_URL        = "${aws_api_gateway_stage.prod.invoke_url}/webhook"
       LOGGING_LEVEL      = "INFO"
     }
   }
