@@ -1,13 +1,11 @@
 import logging
 
-from pydantic_settings import BaseSettings, SettingsConfigDict
+from pydantic_settings import BaseSettings
 
 
 class Config(BaseSettings):
     telegram_bot_token: str
     logging_level: str = "INFO"
-
-    model_config = SettingsConfigDict(env_file=".env", env_file_encoding="utf-8", extra="ignore")
 
 
 config = Config()  # type: ignore[call-arg]

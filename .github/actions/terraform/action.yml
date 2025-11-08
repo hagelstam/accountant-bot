@@ -1,0 +1,60 @@
+name: 'Terraform validate and plan and apply'
+description: 'Terraform validate and plan and apply'
+
+inputs:
+  directory:
+    description: 'Terraform directory'
+    required: true
+  apply:
+    description: 'Apply Terraform plan'
+    required: false
+    default: 'false'
+  plan-comment:
+    description: 'Post PR comment with Terraform plan'
+    required: false
+    default: 'true'
+
+runs:
+  using: 'composite'
+  steps:
+    - name: Setup Terraform
+      uses: hashicorp/setup-terraform@v3
+      with:
+        terraform_version: 1.13.5
+
+    - name: Init
+      run: terraform init
+      shell: bash
+      working-directory: ${{ inputs.directory }}
+
+    - name: Format check
+      run: terraform fmt -check
+      shell: bash
+      working-directory: ${{ inputs.directory }}
+
+    - name: Validate
+      run: terraform validate
+      shell: bash
+      working-directory: ${{ inputs.directory }}
+
+    - name: Plan
+      id: plan
+      run: terraform plan -out=tfplan
+      shell: bash
+      working-directory: ${{ inputs.directory }}
+      continue-on-error: ${{ inputs.plan-comment == 'true' }}
+
+    - name: Post PR comment
+      if: inputs.plan-comment == 'true'
+      uses: borchero/terraform-plan-comment@v2
+      with:
+        token: ${{ github.token }}
+        planfile: tfplan
+        working-directory: ${{ inputs.directory }}
+        skip-empty: true
+
+    - name: Apply
+      if: inputs.apply == 'true'
+      run: terraform apply tfplan -auto-approve
+      shell: bash
+      working-directory: ${{ inputs.directory }}

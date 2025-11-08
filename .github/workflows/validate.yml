@@ -1,0 +1,87 @@
+name: Validate
+
+on:
+  pull_request:
+    branches: ['*']
+    paths-ignore: ['**.md']
+
+env:
+  AWS_REGION: eu-north-1
+
+jobs:
+  lint:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v5
+
+      - name: Bootstrap
+        uses: ./.github/actions/bootstrap
+
+      - name: Run checks
+        run: make check
+
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v5
+
+      - name: Bootstrap
+        uses: ./.github/actions/bootstrap
+
+      - name: Run tests
+        run: make test
+
+      # - name: Upload coverage report
+      #   uses: codecov/codecov-action@v5
+      #   env:
+      #     CODECOV_TOKEN: ${{ secrets.CODECOV_TOKEN }}
+
+  build-push:
+    runs-on: ubuntu-latest
+    needs: [lint, test]
+
+    permissions:
+      id-token: write
+      contents: read
+
+    steps:
+      - uses: actions/checkout@v5
+
+      - name: Configure AWS credentials
+        uses: aws-actions/configure-aws-credentials@v5
+        with:
+          role-to-assume: arn:aws:iam::747683189254:role/deployer
+          aws-region: ${{ env.AWS_REGION }}
+
+      - name: Build and push image
+        uses: ./.github/actions/build-push
+        with:
+          tag: ${{ github.sha }}
+          repository: accountant-bot-prod
+          push: false
+          scan: false
+
+  terraform:
+    runs-on: ubuntu-latest
+    needs: [build-push]
+
+    permissions:
+      id-token: write
+      pull-requests: write
+      contents: read
+
+    steps:
+      - uses: actions/checkout@v5
+
+      - name: Configure AWS credentials
+        uses: aws-actions/configure-aws-credentials@v5
+        with:
+          role-to-assume: arn:aws:iam::747683189254:role/deployer
+          aws-region: ${{ env.AWS_REGION }}
+
+      - name: Terraform
+        uses: ./.github/actions/terraform
+        with:
+          directory: infra/env/prod
+          plan-comment: true
+          apply: false
