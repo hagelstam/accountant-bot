@@ -24,7 +24,6 @@ runs:
       with:
         version: ${{ inputs.uv-version }}
         enable-cache: 'true'
-        cache-suffix: ${{ matrix.python-version }}
 
     - name: Install dependencies
       shell: bash
