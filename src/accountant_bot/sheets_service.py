@@ -40,18 +40,18 @@ class SheetsService:
         # The leftmost (newest) sheet is the first in the list
         return worksheets[0]
 
+    def _find_expense_start_row(self, col_values: list[str]) -> int | None:
+        for i, value in enumerate(col_values, start=1):
+            if "Total Net income" in str(value):
+                # Expenses start after the header row following income
+                return i + 2  # Skip the header row
+        return None
+
     def _find_next_empty_row(self, worksheet: gspread.Worksheet) -> int:
         # Get all values from the first column (Fundamentals)
         col_values = worksheet.col_values(1)
 
-        # Find where expenses start (after "Total Net income")
-        start_row = None
-        for i, value in enumerate(col_values, start=1):
-            if "Total Net income" in str(value):
-                # Expenses start after the header row following income
-                start_row = i + 2  # Skip the header row
-                break
-
+        start_row = self._find_expense_start_row(col_values)
         if start_row is None:
             raise ValueError()
 
@@ -69,3 +69,35 @@ class SheetsService:
 
         worksheet.update_cell(next_row, 1, expense.desc)
         worksheet.update_cell(next_row, 2, expense.amount)
+
+    def _sum_column_amounts(
+        self,
+        amounts_col: list[str],
+        desc_col: list[str],
+        start_row: int,
+    ) -> float:
+        total = 0.0
+        for i in range(start_row - 1, len(amounts_col)):
+            if i < len(desc_col) and str(desc_col[i]).strip():
+                try:
+                    amount_str = str(amounts_col[i]).replace(",", ".")
+                    total += float(amount_str)
+                except ValueError, IndexError:
+                    continue
+        return total
+
+    def get_monthly_total(self) -> float:
+        worksheet = self._get_current_month_worksheet()
+        col_values = worksheet.col_values(1)
+        fundamental_amounts = worksheet.col_values(2)
+        fun_desc_values = worksheet.col_values(3)
+        fun_amounts = worksheet.col_values(4)
+
+        start_row = self._find_expense_start_row(col_values)
+        if start_row is None:
+            return 0.0
+
+        fundamentals_total = self._sum_column_amounts(fundamental_amounts, col_values, start_row)
+        fun_total = self._sum_column_amounts(fun_amounts, fun_desc_values, start_row)
+
+        return fundamentals_total + fun_total

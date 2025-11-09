@@ -35,12 +35,14 @@ async def process_update(event: dict[str, Any]) -> dict[str, Any]:
             "statusCode": 200,
             "body": json.dumps({"status": "ok"}),
         }
+
     except json.JSONDecodeError:
         logger.exception("JSON decode error")
         return {
             "statusCode": 400,
             "body": json.dumps({"error": "Invalid JSON"}),
         }
+
     except Exception:
         logger.exception("Error processing update")
         return {

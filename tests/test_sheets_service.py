@@ -134,3 +134,85 @@ class TestSheetsService:
 
         mock_worksheet.update_cell.assert_any_call(4, 1, "Coffee")
         mock_worksheet.update_cell.assert_any_call(4, 2, 3.50)
+
+    @patch("accountant_bot.sheets_service.Credentials.from_service_account_info")
+    @patch("accountant_bot.sheets_service.gspread.authorize")
+    def test_get_monthly_total(
+        self, mock_authorize: Mock, mock_from_service_account: Mock, mock_credentials: str
+    ) -> None:
+        mock_from_service_account.return_value = MagicMock()
+
+        mock_client = MagicMock()
+        mock_authorize.return_value = mock_client
+
+        mock_worksheet = MagicMock()
+        mock_worksheet.col_values.side_effect = [
+            ["Jobb", "Total Net income ", "Fundamentals", "Coffee", "Lunch", ""],
+            ["1500", "", "", "3.50", "12.95", ""],
+            ["", "", "Fun", "Cinema", "", ""],
+            ["", "", "", "15.00", "", ""],
+        ]
+
+        mock_spreadsheet = MagicMock()
+        mock_spreadsheet.worksheets.return_value = [mock_worksheet]
+        mock_client.open_by_key.return_value = mock_spreadsheet
+
+        service = SheetsService(credentials_json=mock_credentials, spreadsheet_id="test-sheet-id")
+
+        total = service.get_monthly_total()
+        # 3.50 (Coffee) + 12.95 (Lunch) + 15.00 (Cinema) = 31.45
+        assert total == 31.45
+
+    @patch("accountant_bot.sheets_service.Credentials.from_service_account_info")
+    @patch("accountant_bot.sheets_service.gspread.authorize")
+    def test_get_monthly_total_empty(
+        self, mock_authorize: Mock, mock_from_service_account: Mock, mock_credentials: str
+    ) -> None:
+        mock_from_service_account.return_value = MagicMock()
+
+        mock_client = MagicMock()
+        mock_authorize.return_value = mock_client
+
+        mock_worksheet = MagicMock()
+        mock_worksheet.col_values.side_effect = [
+            ["Jobb", "Total Net income ", "Fundamentals", ""],
+            ["1500", "", "", ""],
+            ["", "", "Fun", ""],
+            ["", "", "", ""],
+        ]
+
+        mock_spreadsheet = MagicMock()
+        mock_spreadsheet.worksheets.return_value = [mock_worksheet]
+        mock_client.open_by_key.return_value = mock_spreadsheet
+
+        service = SheetsService(credentials_json=mock_credentials, spreadsheet_id="test-sheet-id")
+
+        total = service.get_monthly_total()
+        assert total == 0.0
+
+    @patch("accountant_bot.sheets_service.Credentials.from_service_account_info")
+    @patch("accountant_bot.sheets_service.gspread.authorize")
+    def test_get_monthly_total_no_income_row(
+        self, mock_authorize: Mock, mock_from_service_account: Mock, mock_credentials: str
+    ) -> None:
+        mock_from_service_account.return_value = MagicMock()
+
+        mock_client = MagicMock()
+        mock_authorize.return_value = mock_client
+
+        mock_worksheet = MagicMock()
+        mock_worksheet.col_values.side_effect = [
+            ["Coffee", "Lunch"],
+            ["3.50", "12.95"],
+            ["Cinema", ""],
+            ["15.00", ""],
+        ]
+
+        mock_spreadsheet = MagicMock()
+        mock_spreadsheet.worksheets.return_value = [mock_worksheet]
+        mock_client.open_by_key.return_value = mock_spreadsheet
+
+        service = SheetsService(credentials_json=mock_credentials, spreadsheet_id="test-sheet-id")
+
+        total = service.get_monthly_total()
+        assert total == 0.0

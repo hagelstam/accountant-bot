@@ -43,8 +43,18 @@ async def handle_expense(update: Update, context: ContextTypes.DEFAULT_TYPE) -> 
 
     try:
         sheets_service.add_expense(expense)
+        monthly_total = sheets_service.get_monthly_total()
+
         formatted_amount = f"{expense.amount:.2f}".replace(".", ",")
-        await update.message.reply_text(f"Added {expense.desc} - {formatted_amount}€")
+        formatted_total = f"{monthly_total:.2f}".replace(".", ",")
+
+        response = (
+            f"✅ Expense added successfully:\n\n"
+            f"📝 {expense.desc} - {formatted_amount}€\n"
+            f"💰 Monthly total: {formatted_total}€"
+        )
+
+        await update.message.reply_text(response)
     except Exception as e:
         logger.exception("Failed to add expense")
         await update.message.reply_text(f"Failed to add expense: {e}")
