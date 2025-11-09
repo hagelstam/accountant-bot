@@ -12,7 +12,7 @@ The bot is designed for cloud deployment and runs entirely on AWS with automated
 
 ## Screenshot
 
-<img src="./docs/screenshot.png" alt="screenshot" width="400"/>
+<img src="./docs/screenshot.png" alt="screenshot" width="500"/>
 
 ## Architecture
 
