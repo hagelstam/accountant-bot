@@ -40,7 +40,7 @@ class SheetsService:
         # The leftmost (newest) sheet is the first in the list
         return worksheets[0]
 
-    def _find_expense_start_row(self, col_values: list[str]) -> int | None:
+    def _find_expense_start_row(self, col_values: list[int | float | str | None]) -> int | None:
         for i, value in enumerate(col_values, start=1):
             if "Total Net income" in str(value):
                 # Expenses start after the header row following income
@@ -72,8 +72,8 @@ class SheetsService:
 
     def _sum_column_amounts(
         self,
-        amounts_col: list[str],
-        desc_col: list[str],
+        amounts_col: list[int | float | str | None],
+        desc_col: list[int | float | str | None],
         start_row: int,
     ) -> float:
         total = 0.0
