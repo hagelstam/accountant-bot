@@ -57,7 +57,7 @@ class SheetsService:
 
         # Find the next empty row after start_row
         for i in range(start_row, len(col_values) + 1):
-            if i >= len(col_values) or not str(col_values[i - 1]).strip():
+            if i > len(col_values) or not str(col_values[i - 1]).strip():
                 return i
 
         # If all rows are filled, append to the end
