@@ -48,11 +48,7 @@ async def handle_expense(update: Update, context: ContextTypes.DEFAULT_TYPE) -> 
         formatted_amount = f"{expense.amount:.2f}".replace(".", ",")
         formatted_total = f"{monthly_total:.2f}".replace(".", ",")
 
-        response = (
-            f"✅ Expense added successfully:\n\n"
-            f"📝 {expense.desc} - {formatted_amount}€\n"
-            f"💰 Monthly total: {formatted_total}€"
-        )
+        response = f"Expense added 💸\n\n{expense.desc} - {formatted_amount}€\nMonthly total: {formatted_total}€"
 
         await update.message.reply_text(response)
     except Exception as e:
