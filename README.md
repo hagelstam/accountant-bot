@@ -6,9 +6,7 @@
   <img src="https://img.shields.io/github/license/hagelstam/accountant-bot.svg" alt="license" />
 </div>
 
-A Telegram bot that processes expense messages and updates my personal budget tracking spreadsheet.
-
-The bot is designed for cloud deployment and runs entirely on AWS with automated deployment.
+Telegram bot that processes expense messages and updates my personal budget tracking spreadsheet.
 
 ## Screenshot
 
@@ -18,14 +16,9 @@ The bot is designed for cloud deployment and runs entirely on AWS with automated
 
 <img src="./docs/architecture.png" alt="architecture" height="250"/>
 
-The bot uses a webhook based architecture deployed on AWS:
-
-1. **Telegram** sends updates to API Gateway via webhook
-2. **API Gateway** invokes a Lambda function (containerized Python app)
-3. **Lambda** processes the expense and updates Google Sheets
-4. **Lambda** sends response back to Telegram with confirmation and monthly total
-
-All infrastructure is defined in Terraform and deployed with GitHub Actions.
+1. Telegram sends updates to the `/webhook` endpoint
+2. API Gateway invokes a Lambda
+3. Lambda updates a Google Sheets spreadsheet and sends a response to Telegram
 
 ## Deployment
 
@@ -94,18 +87,14 @@ curl -X POST "https://api.telegram.org/bot<BOT_TOKEN>/setWebhook" -d "url=<API_G
 
 ## Configuration
 
-The bot requires the following environment variables:
+The following environment variables are required:
 
 - `TELEGRAM_BOT_TOKEN` - Your Telegram bot token from BotFather
 - `GOOGLE_CREDENTIALS_JSON` - Google Service Account credentials (JSON string)
 - `GOOGLE_SPREADSHEET_ID` - ID of your Google Sheets expense tracker
 - `LOGGING_LEVEL` - Logging verbosity (DEBUG, INFO, WARNING, ERROR, CRITICAL)
 
-These are automatically injected into the Lambda function by Terraform during deployment.
-
 ## Development
-
-While the bot is designed for cloud deployment, you can run tests and quality checks locally:
 
 ```bash
 # Install dependencies
@@ -122,10 +111,10 @@ make check
 
 - [uv](https://docs.astral.sh/uv/)
 - [Terraform](https://developer.hashicorp.com/terraform/)
+- [Google Sheets API](https://developers.google.com/sheets/api)
 - [AWS Lambda](https://aws.amazon.com/lambda/)
 - [AWS API Gateway](https://aws.amazon.com/api-gateway/)
 - [AWS ECR](https://aws.amazon.com/ecr/)
-- [Google Sheets API](https://developers.google.com/sheets/api)
 
 ## License
 
