@@ -16,7 +16,7 @@ Telegram bot that processes expense messages and updates my personal budget trac
 
 ## Screenshot
 
-<img src="./docs/screenshot.png" alt="screenshot" width="500"/>
+<img src="./docs/screenshot.png" alt="screenshot" width="400"/>
 
 ## Architecture
 
