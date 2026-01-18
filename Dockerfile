@@ -1,20 +1,22 @@
-FROM public.ecr.aws/lambda/python:3.14 AS builder
-
-COPY --from=ghcr.io/astral-sh/uv:0.9.8 /uv /usr/local/bin/uv
+FROM golang:1.25-alpine AS builder
 
 WORKDIR /build
 
-COPY uv.lock pyproject.toml ./
+COPY go.mod go.sum ./
 
-RUN uv export --frozen --no-hashes > requirements.txt && \
-    pip install --no-cache-dir -r requirements.txt --target /build/python
+RUN --mount=type=cache,target=/go/pkg/mod \
+    go mod download
 
-FROM public.ecr.aws/lambda/python:3.14
+COPY src/*.go ./
 
-WORKDIR ${LAMBDA_TASK_ROOT}
+RUN --mount=type=cache,target=/go/pkg/mod \
+    --mount=type=cache,target=/root/.cache/go-build \
+    GOOS=linux GOARCH=arm64 CGO_ENABLED=0 go build -ldflags="-w -s" -tags lambda.norpc -o bootstrap .
 
-COPY --from=builder /build/python /var/lang/lib/python3.14/site-packages
+FROM scratch
 
-COPY src/accountant_bot ./accountant_bot
+COPY --from=builder /build/bootstrap /bootstrap
 
-CMD ["accountant_bot.lambda_handler.lambda_handler"]
+COPY --from=builder /etc/ssl/certs/ca-certificates.crt /etc/ssl/certs/
+
+ENTRYPOINT ["/bootstrap"]

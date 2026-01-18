@@ -1,47 +1,50 @@
-# Byte-compiled
-__pycache__/
-*.py[cod]
-*$py.class
+# Binaries for programs and plugins
+*.exe
+*.exe~
+*.dll
+*.so
+*.dylib
+bootstrap
 
-# Distribution
-build/
-dist/
-*.egg-info/
+# Test binary, built with `go test -c`
+*.test
 
-# Virtual environments
-.venv/
-venv/
+# Output of the go coverage tool, specifically when used with LiteIDE
+*.out
 
-# Environment variables
+# Dependency directories
+vendor/
+
+# Go workspace file
+go.work
+go.work.sum
+
+# IDE specific files
+.idea/
+.vscode/
+*.swp
+*.swo
+
+# OS specific files
+.DS_Store
+.DS_Store?
+._*
+.Trashes
+
+# Binary output directory
+/bin/
+/dist/
+
+# Local environment variables
 .env
+.env.local
 
 # Google Sheets credentials
 credentials.json
 token.json
 
-# Pytest
-.pytest_cache/
-pytest-*
-
-# Editor and OS files
-.DS_Store
-.vscode/
-.idea/
-
-# Dev
-.mypy_cache/
-.ruff_cache/
-
-# Logs
-*.log
-
-# Coverage
-.coverage
-coverage.xml
-
 # Terraform
 .terraform/
-.terraform.lock.hcl
 terraform.tfstate
 terraform.tfstate.backup
 terraform.tfvars

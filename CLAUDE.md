@@ -23,7 +23,6 @@
 ### Testing
 
 - Table‑driven tests; deterministic and hermetic by default.
-- Run `-race` in CI; add `t.Cleanup` for teardown.
 - Mark safe tests with `t.Parallel()`.
 
 ### Logging
@@ -55,17 +54,6 @@
 - Never log secrets; manage secrets outside code (env/secret manager).
 - Limit filesystem/network access by default; principle of least privilege.
 - Add fuzz tests for untrusted inputs.
-
-### Tooling
-
-- Linters: `golangci-lint`, `staticcheck`, `gofumpt`.
-- Security: `govulncheck`, dependency scanners.
-
-### Tooling gates
-
-- `go vet ./...` passes.
-- `golangci-lint run` passes with project config.
-- `go test -race ./...` passes.
 
 ## Writing functions best practices
 

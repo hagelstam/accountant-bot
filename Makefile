@@ -1,22 +1,23 @@
 .PHONY: install
 install:
-	@uv sync
+	go install
 
-.PHONY: check
-check:
-	@echo "Checking lock file..."
-	@uv lock --locked
-	@echo "Linting..."
-	@uv run ruff check
-	@echo "Format checking..."
-	@uv run ruff format --check
-	@echo "Static type checking..."
-	@uv run mypy
+.PHONY: build
+build:
+	GOOS=linux GOARCH=arm64 CGO_ENABLED=0 go build -ldflags="-w -s" -tags lambda.norpc -o bootstrap ./src
 
 .PHONY: test
 test:
-	@uv run python -m pytest --cov --cov-config=pyproject.toml --cov-report=xml
+	go test ./... -short
 
-.PHONY: format
-format:
-	@uv run ruff format
+.PHONY: lint
+lint:
+	golangci-lint run ./...
+
+.PHONY: vet
+vet:
+	go vet ./...
+
+.PHONY: fmt
+fmt:
+	gofmt -s -l -w .
