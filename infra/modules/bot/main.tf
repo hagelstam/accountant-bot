@@ -1,19 +1,3 @@
-data "aws_caller_identity" "current" {}
-data "aws_region" "current" {}
-
-locals {
-  project_name = "accountant-bot"
-  name_prefix  = "${local.project_name}-${var.environment}"
-  common_tags  = var.tags
-
-  # Telegram IP ranges for security
-  # https://core.telegram.org/bots/webhooks#the-short-version
-  telegram_ip_ranges = [
-    "149.154.160.0/20",
-    "91.108.4.0/22"
-  ]
-}
-
 # ECR repository
 resource "aws_ecr_repository" "bot" {
   name                 = local.name_prefix
@@ -38,12 +22,12 @@ resource "aws_ecr_lifecycle_policy" "bot" {
     rules = [
       {
         rulePriority = 1
-        description  = "Keep last 10 images"
+        description  = "Keep last 5 images"
         selection = {
           tagStatus     = "tagged"
           tagPrefixList = ["v"]
           countType     = "imageCountMoreThan"
-          countNumber   = 10
+          countNumber   = 5
         }
         action = {
           type = "expire"
