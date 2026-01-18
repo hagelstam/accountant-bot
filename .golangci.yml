@@ -1,0 +1,38 @@
+version: "2"
+linters:
+  enable:
+    - bodyclose
+    # - exhaustive
+    # - goconst
+    # - godot
+    # - godox
+    # - gomoddirectives
+    - goprintffuncname
+    # - gosec
+    - misspell
+    # - nakedret
+    # - nestif
+    # - nilerr
+    - noctx
+    - nolintlint
+    # - prealloc
+    # - revive
+    - rowserrcheck
+    - sqlclosecheck
+    - staticcheck
+    - tparallel
+    # - unconvert
+    # - unparam
+    - whitespace
+    # - wrapcheck
+  exclusions:
+    generated: lax
+    presets:
+      - common-false-positives
+
+formatters:
+  enable:
+    - gofmt
+    - goimports
+  exclusions:
+    generated: lax
