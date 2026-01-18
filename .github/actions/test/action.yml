@@ -4,22 +4,42 @@ description: 'Run tests'
 runs:
   using: 'composite'
   steps:
-    - name: Install Python
-      uses: actions/setup-python@v6
-
-    - name: Install uv
-      uses: astral-sh/setup-uv@v7
+    - name: Setup Go
+      uses: actions/setup-go@v6
       with:
-        enable-cache: 'true'
+        go-version-file: go.mod
+        cache: true
 
     - name: Install dependencies
       shell: bash
-      run: uv sync --frozen
+      run: go mod download
 
-    - name: Lint
+    - name: Vet
       shell: bash
-      run: make check
+      run: make vet
 
     - name: Test
       shell: bash
       run: make test
+
+    - name: Verify fmt
+      shell: bash
+      run: |
+        set -euo pipefail
+
+        make fmt
+
+        DIFF=$(git status --porcelain)
+
+        if [ -n "$DIFF" ]; then
+          echo "These files were modified:"
+          echo
+          echo "$DIFF"
+          echo
+          exit 1
+        fi
+
+    - name: Lint
+      uses: golangci/golangci-lint-action@v8
+      with:
+        version: v2.8.0
