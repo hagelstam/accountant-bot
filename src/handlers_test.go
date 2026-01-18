@@ -51,6 +51,8 @@ func TestFormatAmount(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
+			t.Parallel()
+
 			got := formatAmount(tt.amount)
 			if got != tt.want {
 				t.Errorf("formatAmount(%v) = %v, want %v", tt.amount, got, tt.want)
