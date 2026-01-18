@@ -13,9 +13,6 @@ inputs:
     description: 'Post PR comment with Terraform plan'
     required: false
     default: 'true'
-  image-tag:
-    description: 'Docker image tag'
-    required: true
   telegram-bot-token:
     description: 'Telegram bot token'
     required: true
@@ -29,10 +26,15 @@ inputs:
 runs:
   using: 'composite'
   steps:
+    - name: Install uv
+      uses: astral-sh/setup-uv@v7
+      with:
+        version: '0.9.7'
+
     - name: Setup Terraform
       uses: hashicorp/setup-terraform@v3
       with:
-        terraform_version: 1.13.5
+        terraform_version: 1.14.3
 
     - name: Init
       run: terraform init
@@ -56,8 +58,7 @@ runs:
         {
           "telegram_bot_token": "${{ inputs.telegram-bot-token }}",
           "google_credentials_json": $(echo '${{ inputs.google-credentials-json }}' | jq -Rs .),
-          "google_spreadsheet_id": "${{ inputs.google-spreadsheet-id }}",
-          "image_tag": "${{ inputs.image-tag }}"
+          "google_spreadsheet_id": "${{ inputs.google-spreadsheet-id }}"
         }
         EOF
         terraform plan -out=tfplan
