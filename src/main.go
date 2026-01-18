@@ -37,16 +37,10 @@ func newApplication() (*application, error) {
 
 	handlers := NewBotHandlers(sheetsService, logger)
 
-	opts := []bot.Option{
-		bot.WithDefaultHandler(handlers.HandleExpense),
-	}
-
-	telegramBot, err := bot.New(config.TelegramBotToken, opts...)
+	telegramBot, err := bot.New(config.TelegramBotToken)
 	if err != nil {
 		return nil, fmt.Errorf("create telegram bot: %w", err)
 	}
-
-	telegramBot.RegisterHandler(bot.HandlerTypeMessageText, "/start", bot.MatchTypeExact, handlers.HandleStart)
 
 	return &application{
 		bot:      telegramBot,
@@ -67,13 +61,40 @@ func (app *application) handleRequest(ctx context.Context, request events.APIGat
 		}, nil
 	}
 
-	app.bot.ProcessUpdate(ctx, &update)
+	if err := app.processUpdate(ctx, &update); err != nil {
+		app.logger.Error("failed to process update", slog.String("error", err.Error()))
+		return events.APIGatewayProxyResponse{
+			StatusCode: 500,
+			Body:       `{"error": "Internal server error"}`,
+		}, nil
+	}
+
 	app.logger.Info("successfully processed update", slog.Int64("update_id", update.ID))
 
 	return events.APIGatewayProxyResponse{
 		StatusCode: 200,
 		Body:       `{"status": "ok"}`,
 	}, nil
+}
+
+func (app *application) processUpdate(ctx context.Context, update *models.Update) error {
+	if update.Message == nil {
+		return nil
+	}
+
+	// Handle /start command
+	if update.Message.Text == "/start" {
+		app.handlers.HandleStart(ctx, app.bot, update)
+		return nil
+	}
+
+	// Handle expenses
+	if update.Message.Text != "" {
+		app.handlers.HandleExpense(ctx, app.bot, update)
+		return nil
+	}
+
+	return nil
 }
 
 func main() {

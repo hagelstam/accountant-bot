@@ -26,16 +26,16 @@ updates:
         patterns:
           - '*'
 
-  # Python
-  - package-ecosystem: 'uv'
+  # Go
+  - package-ecosystem: 'gomod'
     directory: '/'
     schedule:
       interval: 'weekly'
     labels:
       - 'dependencies'
-      - 'python'
+      - 'go'
     groups:
-      python:
+      go:
         patterns:
           - '*'
 
