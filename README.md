@@ -1,9 +1,15 @@
 <div align="center">
   <img src="./docs/logo.png" height="128px" width="128px"/>
   <h1>Accountant Bot</h1>
-  <img src="https://github.com/hagelstam/accountant-bot/actions/workflows/deploy.yml/badge.svg" alt="actions" />
-  <img src="https://codecov.io/gh/hagelstam/accountant-bot/branch/main/graph/badge.svg" alt="codecov" />
-  <img src="https://img.shields.io/github/license/hagelstam/accountant-bot.svg" alt="license" />
+  <a href="https://github.com/hagelstam/accountant-bot/deployments/prod">
+    <img src="https://github.com/hagelstam/accountant-bot/actions/workflows/deploy.yml/badge.svg" alt="actions" />
+  </a>
+  <a href="https://goreportcard.com/report/hagelstam/accountant-bot">
+    <img src="https://goreportcard.com/badge/hagelstam/accountant-bot" alt="go-report-card" />
+  </a>
+  <a href="https://opensource.org/license/mit">
+    <img src="https://img.shields.io/github/license/hagelstam/accountant-bot.svg" alt="license" />
+  </a>
 </div>
 
 Telegram bot that processes expense messages and updates my personal budget tracking spreadsheet.
@@ -18,17 +24,53 @@ Telegram bot that processes expense messages and updates my personal budget trac
 
 1. Telegram sends updates to the `/webhook` endpoint
 2. API Gateway invokes a Lambda
-3. Lambda updates a Google Sheets spreadsheet and sends a response to Telegram
+3. Lambda updates a Google Sheets spreadsheet and sends a response back to Telegram
 
-## Deployment
+## Prerequisites
 
-### Prerequisites
-
+- [mise](https://mise.jdx.dev/)
 - AWS account
-- Terraform
 - Docker
 - Telegram bot token (from [@BotFather](https://t.me/botfather))
 - Google Service account credentials with Sheets API access
+
+## Development
+
+Install development tools:
+
+```bash
+mise install
+```
+
+Available commands:
+
+```bash
+# Run tests
+make test
+
+# Run linting
+make lint
+
+# Format code
+make fmt
+
+# Build binary
+make build
+```
+
+## Configuration
+
+The following environment variables are required:
+
+`TELEGRAM_BOT_TOKEN` - Your Telegram bot token from BotFather
+
+`GOOGLE_CREDENTIALS_JSON` - Google Service Account credentials (JSON string)
+
+`GOOGLE_SPREADSHEET_ID` - ID of your Google Sheets expense tracker
+
+`LOGGING_LEVEL` - Logging verbosity (DEBUG, INFO, WARN, ERROR)
+
+## Deployment
 
 ### Infrastructure setup
 
@@ -46,8 +88,8 @@ IMAGE_TAG="latest"
 # Login to ECR
 aws ecr get-login-password --region $AWS_REGION | docker login --username AWS --password-stdin $AWS_ACCOUNT_ID.dkr.ecr.$AWS_REGION.amazonaws.com
 
-# Build Docker image
-docker buildx build --platform linux/amd64 -t $ECR_REPOSITORY:$IMAGE_TAG .
+# Build Docker image for ARM64
+docker buildx build --platform linux/arm64 -t $ECR_REPOSITORY:$IMAGE_TAG .
 
 # Tag image for ECR
 docker tag $ECR_REPOSITORY:$IMAGE_TAG $AWS_ACCOUNT_ID.dkr.ecr.$AWS_REGION.amazonaws.com/$ECR_REPOSITORY:$IMAGE_TAG
@@ -85,31 +127,9 @@ terraform apply
 curl -X POST "https://api.telegram.org/bot<BOT_TOKEN>/setWebhook" -d "url=<API_GATEWAY_URL>/prod/webhook"
 ```
 
-## Configuration
-
-The following environment variables are required:
-
-- `TELEGRAM_BOT_TOKEN` - Your Telegram bot token from BotFather
-- `GOOGLE_CREDENTIALS_JSON` - Google Service Account credentials (JSON string)
-- `GOOGLE_SPREADSHEET_ID` - ID of your Google Sheets expense tracker
-- `LOGGING_LEVEL` - Logging verbosity (DEBUG, INFO, WARNING, ERROR, CRITICAL)
-
-## Development
-
-```bash
-# Install dependencies
-make install
-
-# Run tests
-make test
-
-# Run quality checks
-make check
-```
-
 ## Built with
 
-- [uv](https://docs.astral.sh/uv/)
+- [Go](https://go.dev/)
 - [Terraform](https://developer.hashicorp.com/terraform/)
 - [Google Sheets API](https://developers.google.com/sheets/api)
 - [AWS Lambda](https://aws.amazon.com/lambda/)
