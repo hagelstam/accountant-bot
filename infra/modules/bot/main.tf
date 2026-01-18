@@ -82,7 +82,6 @@ module "bot" {
   create_role                = false
   lambda_role                = aws_iam_role.lambda.arn
 
-  use_existing_cloudwatch_log_group = true
   cloudwatch_logs_retention_in_days = var.log_retention_days
 
   tags = local.common_tags
