@@ -1,6 +1,11 @@
+output "ecr_repository_url" {
+  description = "URL of the ECR repository"
+  value       = aws_ecr_repository.bot.repository_url
+}
+
 output "lambda_function_arn" {
   description = "ARN of the Lambda function"
-  value       = module.bot.lambda_function_arn
+  value       = aws_lambda_function.bot.arn
 }
 
 output "webhook_url" {
