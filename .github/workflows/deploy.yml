@@ -11,7 +11,7 @@ env:
 
 jobs:
   test:
-    runs-on: ubuntu-24.04
+    runs-on: ubuntu-24.04-arm
     steps:
       - uses: actions/checkout@v6
       - uses: ./.github/actions/test
@@ -19,7 +19,7 @@ jobs:
           codecov-token: ${{ secrets.CODECOV_TOKEN }}
 
   build-push:
-    runs-on: ubuntu-24.04
+    runs-on: ubuntu-24.04-arm
     needs: [test]
     environment: prod
 
@@ -45,7 +45,7 @@ jobs:
           scan: false
 
   deploy:
-    runs-on: ubuntu-24.04
+    runs-on: ubuntu-24.04-arm
     needs: [build-push]
     environment: prod
 

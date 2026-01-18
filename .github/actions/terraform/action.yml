@@ -1,5 +1,5 @@
-name: 'Terraform validate and plan and apply'
-description: 'Terraform validate and plan and apply'
+name: 'Terraform validate, plan and apply'
+description: 'Terraform validate, plan and apply'
 
 inputs:
   directory:
