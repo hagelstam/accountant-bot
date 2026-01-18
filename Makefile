@@ -8,7 +8,7 @@ build:
 
 .PHONY: test
 test:
-	go test ./... -short
+	go test ./...
 
 .PHONY: lint
 lint:
