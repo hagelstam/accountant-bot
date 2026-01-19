@@ -22,15 +22,11 @@ Telegram bot that processes expense messages and updates my personal budget trac
 
 <img src="./docs/architecture.png" alt="architecture" height="250"/>
 
-1. Telegram sends updates to the `/webhook` endpoint
-2. API Gateway invokes a Lambda
-3. Lambda updates a Google Sheets spreadsheet and sends a response back to Telegram
-
 ## Prerequisites
 
 - [mise](https://mise.jdx.dev/)
-- AWS account
 - Docker
+- AWS account
 - Telegram bot token (from [@BotFather](https://t.me/botfather))
 - Google Service account credentials with Sheets API access
 
@@ -42,21 +38,7 @@ Install development tools:
 mise install
 ```
 
-Available commands:
-
-```bash
-# Run tests
-make test
-
-# Run linting
-make lint
-
-# Format code
-make fmt
-
-# Build binary
-make build
-```
+Run `make help` to see available commands.
 
 ## Configuration
 
@@ -104,13 +86,13 @@ docker push $AWS_ACCOUNT_ID.dkr.ecr.$AWS_REGION.amazonaws.com/$ECR_REPOSITORY:$I
 cd infra/env/prod
 ```
 
-4. Create `terraform.tfvars` with your configuration:
+4. Create `terraform.tfvars` with your config:
 
 ```hcl
 telegram_bot_token      = "your-telegram-bot-token"
 google_credentials_json = "your-google-credentials-json"
 google_spreadsheet_id   = "your-spreadsheet-id"
-image_tag              = "latest"
+image_tag               = "latest"
 ```
 
 5. Deploy infrastructure:
@@ -130,6 +112,7 @@ curl -X POST "https://api.telegram.org/bot<BOT_TOKEN>/setWebhook" -d "url=<API_G
 ## Built with
 
 - [Go](https://go.dev/)
+- [Docker](https://www.docker.com/)
 - [Terraform](https://developer.hashicorp.com/terraform/)
 - [Google Sheets API](https://developers.google.com/sheets/api)
 - [AWS Lambda](https://aws.amazon.com/lambda/)
