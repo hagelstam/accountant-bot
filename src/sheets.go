@@ -19,9 +19,13 @@ type SheetsService struct {
 }
 
 func NewSheetsService(ctx context.Context, credentialsJSON, spreadsheetID string, logger *slog.Logger) (*SheetsService, error) {
-	creds, err := google.CredentialsFromJSON(ctx, []byte(credentialsJSON),
-		"https://www.googleapis.com/auth/spreadsheets",
-		"https://www.googleapis.com/auth/drive")
+	creds, err := google.CredentialsFromJSONWithParams(ctx, []byte(credentialsJSON),
+		google.CredentialsParams{
+			Scopes: []string{
+				"https://www.googleapis.com/auth/spreadsheets",
+				"https://www.googleapis.com/auth/drive",
+			},
+		})
 	if err != nil {
 		return nil, fmt.Errorf("failed to parse credentials: %w", err)
 	}
