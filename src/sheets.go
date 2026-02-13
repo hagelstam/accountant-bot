@@ -7,7 +7,7 @@ import (
 	"strconv"
 	"strings"
 
-	"golang.org/x/oauth2/google"
+	"cloud.google.com/go/auth/credentials"
 	"google.golang.org/api/option"
 	"google.golang.org/api/sheets/v4"
 )
@@ -19,18 +19,18 @@ type SheetsService struct {
 }
 
 func NewSheetsService(ctx context.Context, credentialsJSON, spreadsheetID string, logger *slog.Logger) (*SheetsService, error) {
-	creds, err := google.CredentialsFromJSONWithParams(ctx, []byte(credentialsJSON),
-		google.CredentialsParams{
-			Scopes: []string{
-				"https://www.googleapis.com/auth/spreadsheets",
-				"https://www.googleapis.com/auth/drive",
-			},
-		})
+	creds, err := credentials.DetectDefault(&credentials.DetectOptions{
+		Scopes: []string{
+			"https://www.googleapis.com/auth/spreadsheets",
+			"https://www.googleapis.com/auth/drive",
+		},
+		CredentialsJSON: []byte(credentialsJSON),
+	})
 	if err != nil {
 		return nil, fmt.Errorf("failed to parse credentials: %w", err)
 	}
 
-	srv, err := sheets.NewService(ctx, option.WithCredentials(creds))
+	srv, err := sheets.NewService(ctx, option.WithAuthCredentials(creds))
 	if err != nil {
 		return nil, fmt.Errorf("failed to create sheets service: %w", err)
 	}

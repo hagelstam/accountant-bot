@@ -5,7 +5,6 @@ go 1.26.0
 require (
 	github.com/aws/aws-lambda-go v1.52.0
 	github.com/go-telegram/bot v1.18.0
-	golang.org/x/oauth2 v0.35.0
 	google.golang.org/api v0.266.0
 )
 
@@ -28,6 +27,7 @@ require (
 	go.opentelemetry.io/otel/trace v1.40.0 // indirect
 	golang.org/x/crypto v0.48.0 // indirect
 	golang.org/x/net v0.50.0 // indirect
+	golang.org/x/oauth2 v0.35.0 // indirect
 	golang.org/x/sys v0.41.0 // indirect
 	golang.org/x/text v0.34.0 // indirect
 	google.golang.org/genproto/googleapis/rpc v0.0.0-20260209200024-4cfbd4190f57 // indirect
