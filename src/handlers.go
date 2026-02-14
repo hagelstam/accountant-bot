@@ -56,8 +56,6 @@ func (h *BotHandlers) HandleExpense(ctx context.Context, b *bot.Bot, update *mod
 	}
 
 	messageText := update.Message.Text
-	h.logger.Info("received message", slog.String("text", messageText))
-
 	expense, err := ParseExpense(messageText)
 	if err != nil || expense == nil {
 		_, sendErr := b.SendMessage(ctx, &bot.SendMessageParams{
