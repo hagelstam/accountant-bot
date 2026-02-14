@@ -11,7 +11,7 @@ type Config struct {
 	TelegramBotToken      string
 	GoogleCredentialsJSON string
 	GoogleSpreadsheetID   string
-	LoggingLevel          slog.Level
+	LogLevel              slog.Level
 }
 
 func LoadConfig() (*Config, error) {
@@ -30,17 +30,17 @@ func LoadConfig() (*Config, error) {
 		return nil, fmt.Errorf("GOOGLE_SPREADSHEET_ID environment variable is required")
 	}
 
-	loggingLevel := getLoggingLevel(os.Getenv("LOGGING_LEVEL"))
+	logLevel := getLogLevel(os.Getenv("LOG_LEVEL"))
 
 	return &Config{
 		TelegramBotToken:      telegramToken,
 		GoogleCredentialsJSON: googleCreds,
 		GoogleSpreadsheetID:   spreadsheetID,
-		LoggingLevel:          loggingLevel,
+		LogLevel:              logLevel,
 	}, nil
 }
 
-func getLoggingLevel(level string) slog.Level {
+func getLogLevel(level string) slog.Level {
 	switch strings.ToUpper(level) {
 	case "DEBUG":
 		return slog.LevelDebug

@@ -26,7 +26,7 @@ func newApplication() (*application, error) {
 	}
 
 	logger := slog.New(slog.NewJSONHandler(os.Stdout, &slog.HandlerOptions{
-		Level: config.LoggingLevel,
+		Level: config.LogLevel,
 	}))
 
 	ctx := context.Background()
