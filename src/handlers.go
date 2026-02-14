@@ -68,7 +68,20 @@ func (h *BotHandlers) HandleExpense(ctx context.Context, b *bot.Bot, update *mod
 		return
 	}
 
-	if err := h.sheets.AddExpense(ctx, expense); err != nil {
+	worksheet, err := h.sheets.GetCurrentMonthWorksheet(ctx)
+	if err != nil {
+		h.logger.Error("failed to get worksheet", slog.String("error", err.Error()))
+		_, sendErr := b.SendMessage(ctx, &bot.SendMessageParams{
+			ChatID: update.Message.Chat.ID,
+			Text:   fmt.Sprintf("Failed to add expense: %v", err),
+		})
+		if sendErr != nil {
+			h.logger.Error("failed to send error message", slog.String("error", sendErr.Error()))
+		}
+		return
+	}
+
+	if err := h.sheets.AddExpense(ctx, worksheet, expense); err != nil {
 		h.logger.Error("failed to add expense", slog.String("error", err.Error()))
 		_, sendErr := b.SendMessage(ctx, &bot.SendMessageParams{
 			ChatID: update.Message.Chat.ID,
@@ -80,7 +93,7 @@ func (h *BotHandlers) HandleExpense(ctx context.Context, b *bot.Bot, update *mod
 		return
 	}
 
-	monthlyTotal, err := h.sheets.GetMonthlyTotal(ctx)
+	monthlyTotal, err := h.sheets.GetMonthlyTotal(ctx, worksheet)
 	if err != nil {
 		h.logger.Error("failed to get monthly total", slog.String("error", err.Error()))
 	}

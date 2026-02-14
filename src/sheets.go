@@ -42,13 +42,22 @@ func NewSheetsService(ctx context.Context, credentialsJSON, spreadsheetID string
 	}, nil
 }
 
-// AddExpense adds an expense to the current month's worksheet
-func (s *SheetsService) AddExpense(ctx context.Context, expense *Expense) error {
-	worksheet, err := s.getCurrentMonthWorksheet(ctx)
+// GetCurrentMonthWorksheet returns the title of the leftmost (newest) worksheet.
+func (s *SheetsService) GetCurrentMonthWorksheet(ctx context.Context) (string, error) {
+	spreadsheet, err := s.service.Spreadsheets.Get(s.spreadsheetID).Context(ctx).Do()
 	if err != nil {
-		return fmt.Errorf("get current worksheet: %w", err)
+		return "", fmt.Errorf("get spreadsheet: %w", err)
 	}
 
+	if len(spreadsheet.Sheets) == 0 {
+		return "", fmt.Errorf("no worksheets found")
+	}
+
+	return spreadsheet.Sheets[0].Properties.Title, nil
+}
+
+// AddExpense adds an expense to the given worksheet
+func (s *SheetsService) AddExpense(ctx context.Context, worksheet string, expense *Expense) error {
 	nextRow, err := s.findNextEmptyRow(ctx, worksheet)
 	if err != nil {
 		return fmt.Errorf("find next empty row: %w", err)
@@ -74,12 +83,7 @@ func (s *SheetsService) AddExpense(ctx context.Context, expense *Expense) error 
 }
 
 // GetMonthlyTotal calculates the total expenses for the current month
-func (s *SheetsService) GetMonthlyTotal(ctx context.Context) (float64, error) {
-	worksheet, err := s.getCurrentMonthWorksheet(ctx)
-	if err != nil {
-		return 0, fmt.Errorf("get current worksheet: %w", err)
-	}
-
+func (s *SheetsService) GetMonthlyTotal(ctx context.Context, worksheet string) (float64, error) {
 	// Get columns for fundamentals and fun expenses
 	colRanges := []string{
 		fmt.Sprintf("%s!A:A", worksheet), // Fundamentals descriptions
@@ -114,20 +118,6 @@ func (s *SheetsService) GetMonthlyTotal(ctx context.Context) (float64, error) {
 	funTotal := s.sumColumnAmounts(funAmounts, funDesc, startRow)
 
 	return fundamentalsTotal + funTotal, nil
-}
-
-func (s *SheetsService) getCurrentMonthWorksheet(ctx context.Context) (string, error) {
-	spreadsheet, err := s.service.Spreadsheets.Get(s.spreadsheetID).Context(ctx).Do()
-	if err != nil {
-		return "", fmt.Errorf("get spreadsheet: %w", err)
-	}
-
-	if len(spreadsheet.Sheets) == 0 {
-		return "", fmt.Errorf("no worksheets found")
-	}
-
-	// The leftmost (newest) sheet is the first in the list
-	return spreadsheet.Sheets[0].Properties.Title, nil
 }
 
 func (s *SheetsService) findExpenseStartRow(colValues [][]interface{}) int {
