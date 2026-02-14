@@ -32,7 +32,7 @@ runs:
     - name: Setup Terraform
       uses: hashicorp/setup-terraform@v3
       with:
-        terraform_version: 1.14.3
+        terraform_version: 1.14.5
 
     - name: Init
       run: terraform init
@@ -49,10 +49,10 @@ runs:
       shell: bash
       working-directory: ${{ inputs.directory }}
 
-    - uses: terraform-linters/setup-tflint@v6
-      name: Setup TFLint
+    - name: Setup TFLint
+      uses: terraform-linters/setup-tflint@v6
       with:
-        tflint_version: v0.60.0
+        tflint_version: v0.61.0
         cache: true
 
     - name: Init TFLint
