@@ -1,5 +1,8 @@
 [tools]
-terraform = "1.14.3"
+terraform = "1.14.5"
 go = "1.26.0"
-tflint = "0.60.0"
+tflint = "0.61.0"
 golangci-lint = "2.9.0"
+
+[env]
+AWS_PROFILE = "MaximAdmin"
