@@ -50,9 +50,10 @@ func (h *BotHandlers) HandleStart(ctx context.Context, b *bot.Bot, update *model
 }
 
 // HandleExpense handles expense messages
-func (h *BotHandlers) HandleExpense(ctx context.Context, b *bot.Bot, update *models.Update) {
+// Returns an error only for Sheets failures that should trigger an SQS retry
+func (h *BotHandlers) HandleExpense(ctx context.Context, b *bot.Bot, update *models.Update) error {
 	if update.Message == nil || update.Message.Text == "" {
-		return
+		return nil
 	}
 
 	messageText := update.Message.Text
@@ -65,32 +66,16 @@ func (h *BotHandlers) HandleExpense(ctx context.Context, b *bot.Bot, update *mod
 		if sendErr != nil {
 			h.logger.Error("failed to send error message", slog.String("error", sendErr.Error()))
 		}
-		return
+		return nil
 	}
 
 	worksheet, err := h.sheets.GetCurrentMonthWorksheet(ctx)
 	if err != nil {
-		h.logger.Error("failed to get worksheet", slog.String("error", err.Error()))
-		_, sendErr := b.SendMessage(ctx, &bot.SendMessageParams{
-			ChatID: update.Message.Chat.ID,
-			Text:   fmt.Sprintf("Failed to add expense: %v", err),
-		})
-		if sendErr != nil {
-			h.logger.Error("failed to send error message", slog.String("error", sendErr.Error()))
-		}
-		return
+		return fmt.Errorf("get worksheet: %w", err)
 	}
 
 	if err := h.sheets.AddExpense(ctx, worksheet, expense); err != nil {
-		h.logger.Error("failed to add expense", slog.String("error", err.Error()))
-		_, sendErr := b.SendMessage(ctx, &bot.SendMessageParams{
-			ChatID: update.Message.Chat.ID,
-			Text:   fmt.Sprintf("Failed to add expense: %v", err),
-		})
-		if sendErr != nil {
-			h.logger.Error("failed to send error message", slog.String("error", sendErr.Error()))
-		}
-		return
+		return fmt.Errorf("add expense: %w", err)
 	}
 
 	monthlyTotal, err := h.sheets.GetMonthlyTotal(ctx, worksheet)
@@ -98,14 +83,11 @@ func (h *BotHandlers) HandleExpense(ctx context.Context, b *bot.Bot, update *mod
 		h.logger.Error("failed to get monthly total", slog.String("error", err.Error()))
 	}
 
-	formattedAmount := formatAmount(expense.Amount)
-	formattedTotal := formatAmount(monthlyTotal)
-
 	response := fmt.Sprintf(
 		"💸 Spent %s€ on %s. New monthly total is %s€",
-		formattedAmount,
+		formatAmount(expense.Amount),
 		expense.Desc,
-		formattedTotal,
+		formatAmount(monthlyTotal),
 	)
 
 	_, err = b.SendMessage(ctx, &bot.SendMessageParams{
@@ -115,6 +97,8 @@ func (h *BotHandlers) HandleExpense(ctx context.Context, b *bot.Bot, update *mod
 	if err != nil {
 		h.logger.Error("failed to send response message", slog.String("error", err.Error()))
 	}
+
+	return nil
 }
 
 func formatAmount(amount float64) string {

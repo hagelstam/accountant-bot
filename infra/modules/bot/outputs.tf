@@ -3,9 +3,14 @@ output "ecr_repository_url" {
   value       = aws_ecr_repository.bot.repository_url
 }
 
-output "lambda_function_arn" {
-  description = "ARN of the Lambda function"
-  value       = aws_lambda_function.bot.arn
+output "worker_function_arn" {
+  description = "ARN of the worker Lambda function"
+  value       = aws_lambda_function.worker.arn
+}
+
+output "sqs_queue_url" {
+  description = "URL of the SQS expenses queue"
+  value       = aws_sqs_queue.expenses.url
 }
 
 output "webhook_url" {
