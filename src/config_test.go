@@ -5,7 +5,7 @@ import (
 	"testing"
 )
 
-func TestGetLoggingLevel(t *testing.T) {
+func TestGetLogLevel(t *testing.T) {
 	t.Parallel()
 
 	tests := []struct {
@@ -74,9 +74,9 @@ func TestGetLoggingLevel(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 			t.Parallel()
 
-			got := getLoggingLevel(tt.level)
+			got := getLogLevel(tt.level)
 			if got != tt.want {
-				t.Errorf("getLoggingLevel(%q) = %v, want %v", tt.level, got, tt.want)
+				t.Errorf("getLogLevel(%q) = %v, want %v", tt.level, got, tt.want)
 			}
 		})
 	}
