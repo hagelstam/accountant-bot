@@ -50,8 +50,6 @@ func newApplication() (*application, error) {
 }
 
 func (app *application) handleRequest(ctx context.Context, request events.APIGatewayProxyRequest) (events.APIGatewayProxyResponse, error) {
-	app.logger.Info("received event", slog.String("body", request.Body))
-
 	var update models.Update
 	if err := json.Unmarshal([]byte(request.Body), &update); err != nil {
 		app.logger.Error("failed to unmarshal update", slog.String("error", err.Error()))
