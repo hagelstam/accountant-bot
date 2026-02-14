@@ -109,8 +109,8 @@ resource "aws_lambda_function" "bot" {
   image_uri     = "${aws_ecr_repository.bot.repository_url}:${var.image_tag}"
   architectures = ["arm64"]
 
-  memory_size = 512
-  timeout     = 30
+  memory_size = 128
+  timeout     = 10
 
   environment {
     variables = {
