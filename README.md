@@ -24,7 +24,7 @@ Telegram bot that processes expense messages and updates my personal budget trac
 
 ## Prerequisites
 
-- [mise](https://mise.jdx.dev/)
+- [mise-en-place](https://mise.jdx.dev/)
 - Docker
 - AWS account
 - Telegram bot token (from [@BotFather](https://t.me/botfather))
@@ -50,7 +50,7 @@ The following environment variables are required:
 
 `GOOGLE_SPREADSHEET_ID` - ID of your Google Sheets expense tracker
 
-`LOGGING_LEVEL` - Logging verbosity (DEBUG, INFO, WARN, ERROR)
+`LOG_LEVEL` - Logging verbosity (DEBUG, INFO, WARN, ERROR)
 
 ## Deployment
 
@@ -115,9 +115,7 @@ curl -X POST "https://api.telegram.org/bot<BOT_TOKEN>/setWebhook" -d "url=<API_G
 - [Docker](https://www.docker.com/)
 - [Terraform](https://developer.hashicorp.com/terraform/)
 - [Google Sheets API](https://developers.google.com/sheets/api)
-- [AWS Lambda](https://aws.amazon.com/lambda/)
-- [AWS API Gateway](https://aws.amazon.com/api-gateway/)
-- [AWS ECR](https://aws.amazon.com/ecr/)
+- AWS (Lambda, SQS, API Gateway, ECR)
 
 ## License
 
