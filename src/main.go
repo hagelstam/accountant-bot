@@ -49,30 +49,35 @@ func newApplication() (*application, error) {
 	}, nil
 }
 
-func (app *application) handleRequest(ctx context.Context, request events.APIGatewayProxyRequest) (events.APIGatewayProxyResponse, error) {
-	var update models.Update
-	if err := json.Unmarshal([]byte(request.Body), &update); err != nil {
-		app.logger.Error("failed to unmarshal update", slog.String("error", err.Error()))
-		return events.APIGatewayProxyResponse{
-			StatusCode: 400,
-			Body:       `{"error": "Invalid JSON"}`,
-		}, nil
+func (app *application) handleRequest(ctx context.Context, event events.SQSEvent) (events.SQSEventResponse, error) {
+	var failures []events.SQSBatchItemFailure
+
+	for _, record := range event.Records {
+		var update models.Update
+		if err := json.Unmarshal([]byte(record.Body), &update); err != nil {
+			app.logger.Error("failed to unmarshal update",
+				slog.String("message_id", record.MessageId),
+				slog.String("error", err.Error()))
+			continue
+		}
+
+		if err := app.processUpdate(ctx, &update); err != nil {
+			app.logger.Error("failed to process update",
+				slog.String("message_id", record.MessageId),
+				slog.Int64("update_id", update.ID),
+				slog.String("error", err.Error()))
+			failures = append(failures, events.SQSBatchItemFailure{
+				ItemIdentifier: record.MessageId,
+			})
+			continue
+		}
+
+		app.logger.Info("successfully processed update",
+			slog.String("message_id", record.MessageId),
+			slog.Int64("update_id", update.ID))
 	}
 
-	if err := app.processUpdate(ctx, &update); err != nil {
-		app.logger.Error("failed to process update", slog.String("error", err.Error()))
-		return events.APIGatewayProxyResponse{
-			StatusCode: 500,
-			Body:       `{"error": "Internal server error"}`,
-		}, nil
-	}
-
-	app.logger.Info("successfully processed update", slog.Int64("update_id", update.ID))
-
-	return events.APIGatewayProxyResponse{
-		StatusCode: 200,
-		Body:       `{"status": "ok"}`,
-	}, nil
+	return events.SQSEventResponse{BatchItemFailures: failures}, nil
 }
 
 func (app *application) processUpdate(ctx context.Context, update *models.Update) error {
@@ -88,8 +93,7 @@ func (app *application) processUpdate(ctx context.Context, update *models.Update
 
 	// Handle expenses
 	if update.Message.Text != "" {
-		app.handlers.HandleExpense(ctx, app.bot, update)
-		return nil
+		return app.handlers.HandleExpense(ctx, app.bot, update)
 	}
 
 	return nil

@@ -27,22 +27,22 @@ func NewSheetsService(ctx context.Context, credentialsJSON, spreadsheetID string
 		CredentialsJSON: []byte(credentialsJSON),
 	})
 	if err != nil {
-		return nil, fmt.Errorf("failed to parse credentials: %w", err)
+		return nil, fmt.Errorf("parse credentials: %w", err)
 	}
 
-	srv, err := sheets.NewService(ctx, option.WithAuthCredentials(creds))
+	service, err := sheets.NewService(ctx, option.WithAuthCredentials(creds))
 	if err != nil {
-		return nil, fmt.Errorf("failed to create sheets service: %w", err)
+		return nil, fmt.Errorf("create sheets service: %w", err)
 	}
 
 	return &SheetsService{
-		service:       srv,
+		service:       service,
 		spreadsheetID: spreadsheetID,
 		logger:        logger,
 	}, nil
 }
 
-// GetCurrentMonthWorksheet returns the title of the leftmost (newest) worksheet.
+// GetCurrentMonthWorksheet returns the title of the newest worksheet
 func (s *SheetsService) GetCurrentMonthWorksheet(ctx context.Context) (string, error) {
 	spreadsheet, err := s.service.Spreadsheets.Get(s.spreadsheetID).Context(ctx).Do()
 	if err != nil {
