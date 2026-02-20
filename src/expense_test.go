@@ -5,12 +5,14 @@ import (
 )
 
 func TestParseExpense(t *testing.T) {
+	t.Parallel()
+
 	tests := []struct {
 		name       string
 		input      string
 		wantDesc   string
 		wantAmount float64
-		wantNil    bool
+		wantErr    bool
 	}{
 		{
 			name:       "simple expense",
@@ -45,56 +47,65 @@ func TestParseExpense(t *testing.T) {
 		{
 			name:    "empty string",
 			input:   "",
-			wantNil: true,
+			wantErr: true,
 		},
 		{
 			name:    "whitespace only",
 			input:   "   ",
-			wantNil: true,
+			wantErr: true,
 		},
 		{
 			name:    "missing amount",
 			input:   "Lunch",
-			wantNil: true,
+			wantErr: true,
 		},
 		{
 			name:    "invalid amount",
 			input:   "Lunch abc",
-			wantNil: true,
+			wantErr: true,
 		},
 		{
 			name:    "negative amount",
 			input:   "Lunch -2.95",
-			wantNil: true,
+			wantErr: true,
 		},
 		{
 			name:    "zero amount",
 			input:   "Lunch 0",
-			wantNil: true,
+			wantErr: true,
 		},
 		{
 			name:    "zero amount with decimals",
 			input:   "Lunch 0.00",
-			wantNil: true,
+			wantErr: true,
+		},
+		{
+			name:    "unparseable number matching regex",
+			input:   "Lunch 1.2.3",
+			wantErr: true,
 		},
 	}
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
+			t.Parallel()
+
 			result, err := ParseExpense(tt.input)
+
+			if tt.wantErr {
+				if err == nil {
+					t.Errorf("ParseExpense() expected error, got nil")
+				}
+				if result != nil {
+					t.Errorf("ParseExpense() = %v, want nil when error", result)
+				}
+				return
+			}
 
 			if err != nil {
 				t.Errorf("ParseExpense() unexpected error = %v", err)
 				return
 			}
-
-			if tt.wantNil {
-				if result != nil {
-					t.Errorf("ParseExpense() = %v, want nil", result)
-				}
-				return
-			}
-
 			if result == nil {
 				t.Errorf("ParseExpense() = nil, want non-nil")
 				return
@@ -103,7 +114,6 @@ func TestParseExpense(t *testing.T) {
 			if result.Desc != tt.wantDesc {
 				t.Errorf("ParseExpense().Desc = %v, want %v", result.Desc, tt.wantDesc)
 			}
-
 			if result.Amount != tt.wantAmount {
 				t.Errorf("ParseExpense().Amount = %v, want %v", result.Amount, tt.wantAmount)
 			}
