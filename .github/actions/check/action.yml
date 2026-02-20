@@ -1,5 +1,5 @@
-name: 'Test'
-description: 'Run tests'
+name: 'Check'
+description: 'Run checks'
 
 runs:
   using: 'composite'
@@ -10,13 +10,13 @@ runs:
         go-version-file: go.mod
         cache: true
 
-    - name: Vet
-      shell: bash
-      run: make vet
-
     - name: Test
       shell: bash
       run: make test
+
+    - name: Vet
+      shell: bash
+      run: make vet
 
     - name: Check formatting
       shell: bash
@@ -25,4 +25,4 @@ runs:
     - name: Lint
       uses: golangci/golangci-lint-action@v9
       with:
-        version: v2.9.0
+        version: v2.10.1
