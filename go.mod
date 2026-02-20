@@ -5,8 +5,8 @@ go 1.26.0
 require (
 	cloud.google.com/go/auth v0.18.2
 	github.com/aws/aws-lambda-go v1.52.0
-	github.com/go-telegram/bot v1.18.0
-	google.golang.org/api v0.266.0
+	github.com/go-telegram/bot v1.19.0
+	google.golang.org/api v0.267.0
 )
 
 require (
