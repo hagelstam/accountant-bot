@@ -5,6 +5,98 @@ import (
 	"testing"
 )
 
+func TestLoadConfig(t *testing.T) {
+	envKeys := []string{"TELEGRAM_BOT_TOKEN", "GOOGLE_CREDENTIALS_JSON", "GOOGLE_SPREADSHEET_ID", "LOG_LEVEL"}
+
+	tests := []struct {
+		name    string
+		envVars map[string]string
+		want    *Config
+		wantErr bool
+	}{
+		{
+			name: "valid config with defaults",
+			envVars: map[string]string{
+				"TELEGRAM_BOT_TOKEN":      "test-token",
+				"GOOGLE_CREDENTIALS_JSON": `{"type":"service_account"}`,
+				"GOOGLE_SPREADSHEET_ID":   "sheet-123",
+			},
+			want: &Config{
+				TelegramBotToken:      "test-token",
+				GoogleCredentialsJSON: `{"type":"service_account"}`,
+				GoogleSpreadsheetID:   "sheet-123",
+				LogLevel:              slog.LevelInfo,
+			},
+		},
+		{
+			name: "valid config with log level",
+			envVars: map[string]string{
+				"TELEGRAM_BOT_TOKEN":      "test-token",
+				"GOOGLE_CREDENTIALS_JSON": `{"type":"service_account"}`,
+				"GOOGLE_SPREADSHEET_ID":   "sheet-123",
+				"LOG_LEVEL":               "DEBUG",
+			},
+			want: &Config{
+				TelegramBotToken:      "test-token",
+				GoogleCredentialsJSON: `{"type":"service_account"}`,
+				GoogleSpreadsheetID:   "sheet-123",
+				LogLevel:              slog.LevelDebug,
+			},
+		},
+		{
+			name: "missing telegram token",
+			envVars: map[string]string{
+				"GOOGLE_CREDENTIALS_JSON": `{"type":"service_account"}`,
+				"GOOGLE_SPREADSHEET_ID":   "sheet-123",
+			},
+			wantErr: true,
+		},
+		{
+			name: "missing google credentials",
+			envVars: map[string]string{
+				"TELEGRAM_BOT_TOKEN":    "test-token",
+				"GOOGLE_SPREADSHEET_ID": "sheet-123",
+			},
+			wantErr: true,
+		},
+		{
+			name: "missing spreadsheet id",
+			envVars: map[string]string{
+				"TELEGRAM_BOT_TOKEN":      "test-token",
+				"GOOGLE_CREDENTIALS_JSON": `{"type":"service_account"}`,
+			},
+			wantErr: true,
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			for _, key := range envKeys {
+				t.Setenv(key, "")
+			}
+			for key, value := range tt.envVars {
+				t.Setenv(key, value)
+			}
+
+			config, err := LoadConfig()
+
+			if tt.wantErr {
+				if err == nil {
+					t.Error("LoadConfig() expected error, got nil")
+				}
+				return
+			}
+
+			if err != nil {
+				t.Fatalf("LoadConfig() unexpected error: %v", err)
+			}
+			if *config != *tt.want {
+				t.Errorf("LoadConfig() = %+v, want %+v", *config, *tt.want)
+			}
+		})
+	}
+}
+
 func TestGetLogLevel(t *testing.T) {
 	t.Parallel()
 
