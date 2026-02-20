@@ -12,6 +12,14 @@ import (
 	"google.golang.org/api/sheets/v4"
 )
 
+type Spreadsheet interface {
+	GetCurrentMonthWorksheet(ctx context.Context) (string, error)
+	AddExpense(ctx context.Context, worksheet string, expense *Expense) error
+	GetMonthlyTotal(ctx context.Context, worksheet string) (float64, error)
+}
+
+var _ Spreadsheet = (*SheetsService)(nil)
+
 type SheetsService struct {
 	service       *sheets.Service
 	spreadsheetID string
@@ -101,36 +109,36 @@ func (s *SheetsService) GetMonthlyTotal(ctx context.Context, worksheet string) (
 	}
 
 	if len(resp.ValueRanges) < 4 {
-		return 0, nil
+		return 0, fmt.Errorf("expected 4 value ranges, got %d", len(resp.ValueRanges))
 	}
 
-	fundamentalsDesc := resp.ValueRanges[0].Values
-	fundamentalsAmounts := resp.ValueRanges[1].Values
-	funDesc := resp.ValueRanges[2].Values
-	funAmounts := resp.ValueRanges[3].Values
-
-	startRow := s.findExpenseStartRow(fundamentalsDesc)
-	if startRow == -1 {
-		return 0, nil
-	}
-
-	fundamentalsTotal := s.sumColumnAmounts(fundamentalsAmounts, fundamentalsDesc, startRow)
-	funTotal := s.sumColumnAmounts(funAmounts, funDesc, startRow)
-
-	return fundamentalsTotal + funTotal, nil
+	return calculateMonthlyTotal(
+		resp.ValueRanges[0].Values,
+		resp.ValueRanges[1].Values,
+		resp.ValueRanges[2].Values,
+		resp.ValueRanges[3].Values,
+	), nil
 }
 
-func (s *SheetsService) findExpenseStartRow(colValues [][]interface{}) int {
-	for i, row := range colValues {
+// Converts a Sheets API column into a []string
+func flattenColumn(col [][]any) []string {
+	result := make([]string, len(col))
+	for i, row := range col {
 		if len(row) > 0 {
-			value := fmt.Sprintf("%v", row[0])
-			if strings.Contains(value, "Total Net income") {
-				// Expenses start after the header row following income
-				return i + 2 // Skip the header row (0-indexed, so +2 gives us the row after next)
-			}
+			result[i] = strings.TrimSpace(fmt.Sprintf("%v", row[0]))
 		}
 	}
-	return -1
+	return result
+}
+
+func findExpenseStartRow(colValues []string) (int, bool) {
+	for i, value := range colValues {
+		if strings.Contains(value, "Total Net income") {
+			// Expenses start after the header row following income
+			return i + 2, true // Skip the header row
+		}
+	}
+	return 0, false
 }
 
 func (s *SheetsService) findNextEmptyRow(ctx context.Context, worksheet string) (int, error) {
@@ -140,37 +148,53 @@ func (s *SheetsService) findNextEmptyRow(ctx context.Context, worksheet string) 
 		return 0, fmt.Errorf("get column values: %w", err)
 	}
 
-	colValues := resp.Values
+	colValues := flattenColumn(resp.Values)
 
-	startRow := s.findExpenseStartRow(colValues)
-	if startRow == -1 {
+	startRow, ok := findExpenseStartRow(colValues)
+	if !ok {
 		return 0, fmt.Errorf("could not find expense start row")
 	}
 
-	// Find the next empty row after startRow (convert to 1-indexed)
-	for i := startRow; i < len(colValues)+1; i++ {
-		if i > len(colValues) || len(colValues[i-1]) == 0 || strings.TrimSpace(fmt.Sprintf("%v", colValues[i-1][0])) == "" {
-			return i + 1, nil // +1 for 1-indexed sheets API
-		}
-	}
-
-	// If all rows are filled, append to the end
-	return len(colValues) + 1, nil
+	return nextEmptyRow(colValues, startRow), nil
 }
 
-func (s *SheetsService) sumColumnAmounts(amounts, descriptions [][]interface{}, startRow int) float64 {
+// Finds the first empty row at or after startRow
+// Returns a 1-indexed row number for the Sheets API
+func nextEmptyRow(colValues []string, startRow int) int {
+	for i := startRow; i < len(colValues)+1; i++ {
+		if i > len(colValues) || colValues[i-1] == "" {
+			return i + 1
+		}
+	}
+	// If all rows are filled, append to the end
+	return len(colValues) + 1
+}
+
+func calculateMonthlyTotal(fundamentalsDescRaw, fundamentalsAmountsRaw, funDescRaw, funAmountsRaw [][]any) float64 {
+	fundamentalsDesc := flattenColumn(fundamentalsDescRaw)
+	fundamentalsAmounts := flattenColumn(fundamentalsAmountsRaw)
+	funDesc := flattenColumn(funDescRaw)
+	funAmounts := flattenColumn(funAmountsRaw)
+
+	startRow, ok := findExpenseStartRow(fundamentalsDesc)
+	if !ok {
+		return 0
+	}
+
+	fundamentalsTotal := sumColumnAmounts(fundamentalsAmounts, fundamentalsDesc, startRow)
+	funTotal := sumColumnAmounts(funAmounts, funDesc, startRow)
+
+	return fundamentalsTotal + funTotal
+}
+
+func sumColumnAmounts(amounts, descriptions []string, startRow int) float64 {
 	total := 0.0
 
 	for i := startRow - 1; i < len(amounts); i++ {
-		// Check if description exists and is not empty
-		if i < len(descriptions) && len(descriptions[i]) > 0 {
-			desc := strings.TrimSpace(fmt.Sprintf("%v", descriptions[i][0]))
-			if desc != "" && len(amounts[i]) > 0 {
-				amountStr := fmt.Sprintf("%v", amounts[i][0])
-				amountStr = strings.ReplaceAll(amountStr, ",", ".")
-				if amount, err := strconv.ParseFloat(amountStr, 64); err == nil {
-					total += amount
-				}
+		if i < len(descriptions) && descriptions[i] != "" && amounts[i] != "" {
+			amountStr := strings.ReplaceAll(amounts[i], ",", ".")
+			if amount, err := strconv.ParseFloat(amountStr, 64); err == nil {
+				total += amount
 			}
 		}
 	}
