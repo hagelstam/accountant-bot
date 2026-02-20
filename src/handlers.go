@@ -10,12 +10,16 @@ import (
 	"github.com/go-telegram/bot/models"
 )
 
+type Sender interface {
+	SendMessage(ctx context.Context, params *bot.SendMessageParams) (*models.Message, error)
+}
+
 type BotHandlers struct {
-	sheets *SheetsService
+	sheets Spreadsheet
 	logger *slog.Logger
 }
 
-func NewBotHandlers(sheets *SheetsService, logger *slog.Logger) *BotHandlers {
+func NewBotHandlers(sheets Spreadsheet, logger *slog.Logger) *BotHandlers {
 	return &BotHandlers{
 		sheets: sheets,
 		logger: logger,
@@ -23,7 +27,7 @@ func NewBotHandlers(sheets *SheetsService, logger *slog.Logger) *BotHandlers {
 }
 
 // HandleStart handles the /start command
-func (h *BotHandlers) HandleStart(ctx context.Context, b *bot.Bot, update *models.Update) {
+func (h *BotHandlers) HandleStart(ctx context.Context, sender Sender, update *models.Update) {
 	if update.Message == nil || update.Message.From == nil {
 		return
 	}
@@ -40,7 +44,7 @@ func (h *BotHandlers) HandleStart(ctx context.Context, b *bot.Bot, update *model
 		user.FirstName,
 	)
 
-	_, err := b.SendMessage(ctx, &bot.SendMessageParams{
+	_, err := sender.SendMessage(ctx, &bot.SendMessageParams{
 		ChatID: update.Message.Chat.ID,
 		Text:   welcomeMessage,
 	})
@@ -50,16 +54,16 @@ func (h *BotHandlers) HandleStart(ctx context.Context, b *bot.Bot, update *model
 }
 
 // HandleExpense handles expense messages
-// Returns an error only for Sheets failures that should trigger an SQS retry
-func (h *BotHandlers) HandleExpense(ctx context.Context, b *bot.Bot, update *models.Update) error {
+// Returns an error only for sheet update failures that should trigger an SQS retry
+func (h *BotHandlers) HandleExpense(ctx context.Context, sender Sender, update *models.Update) error {
 	if update.Message == nil || update.Message.Text == "" {
 		return nil
 	}
 
 	messageText := update.Message.Text
 	expense, err := ParseExpense(messageText)
-	if err != nil || expense == nil {
-		_, sendErr := b.SendMessage(ctx, &bot.SendMessageParams{
+	if err != nil {
+		_, sendErr := sender.SendMessage(ctx, &bot.SendMessageParams{
 			ChatID: update.Message.Chat.ID,
 			Text:   "Could not parse expense. Please use format:\n\nExample: `Lunch 2.95`",
 		})
@@ -90,7 +94,7 @@ func (h *BotHandlers) HandleExpense(ctx context.Context, b *bot.Bot, update *mod
 		formatAmount(monthlyTotal),
 	)
 
-	_, err = b.SendMessage(ctx, &bot.SendMessageParams{
+	_, err = sender.SendMessage(ctx, &bot.SendMessageParams{
 		ChatID: update.Message.Chat.ID,
 		Text:   response,
 	})

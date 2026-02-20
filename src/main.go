@@ -13,13 +13,13 @@ import (
 	"github.com/go-telegram/bot/models"
 )
 
-type application struct {
-	bot      *bot.Bot
+type app struct {
+	sender   Sender
 	handlers *BotHandlers
 	logger   *slog.Logger
 }
 
-func newApplication() (*application, error) {
+func newApp() (*app, error) {
 	config, err := LoadConfig()
 	if err != nil {
 		return nil, fmt.Errorf("load config: %w", err)
@@ -42,27 +42,27 @@ func newApplication() (*application, error) {
 		return nil, fmt.Errorf("create telegram bot: %w", err)
 	}
 
-	return &application{
-		bot:      telegramBot,
+	return &app{
+		sender:   telegramBot,
 		handlers: handlers,
 		logger:   logger,
 	}, nil
 }
 
-func (app *application) handleRequest(ctx context.Context, event events.SQSEvent) (events.SQSEventResponse, error) {
+func (a *app) handleRequest(ctx context.Context, event events.SQSEvent) (events.SQSEventResponse, error) {
 	var failures []events.SQSBatchItemFailure
 
 	for _, record := range event.Records {
 		var update models.Update
 		if err := json.Unmarshal([]byte(record.Body), &update); err != nil {
-			app.logger.Error("failed to unmarshal update",
+			a.logger.Error("failed to unmarshal update",
 				slog.String("message_id", record.MessageId),
 				slog.String("error", err.Error()))
 			continue
 		}
 
-		if err := app.processUpdate(ctx, &update); err != nil {
-			app.logger.Error("failed to process update",
+		if err := a.processUpdate(ctx, &update); err != nil {
+			a.logger.Error("failed to process update",
 				slog.String("message_id", record.MessageId),
 				slog.Int64("update_id", update.ID),
 				slog.String("error", err.Error()))
@@ -72,7 +72,7 @@ func (app *application) handleRequest(ctx context.Context, event events.SQSEvent
 			continue
 		}
 
-		app.logger.Info("successfully processed update",
+		a.logger.Info("successfully processed update",
 			slog.String("message_id", record.MessageId),
 			slog.Int64("update_id", update.ID))
 	}
@@ -80,30 +80,27 @@ func (app *application) handleRequest(ctx context.Context, event events.SQSEvent
 	return events.SQSEventResponse{BatchItemFailures: failures}, nil
 }
 
-func (app *application) processUpdate(ctx context.Context, update *models.Update) error {
+func (a *app) processUpdate(ctx context.Context, update *models.Update) error {
 	if update.Message == nil {
 		return nil
 	}
 
-	// Handle /start command
 	if update.Message.Text == "/start" {
-		app.handlers.HandleStart(ctx, app.bot, update)
+		a.handlers.HandleStart(ctx, a.sender, update)
 		return nil
 	}
 
-	// Handle expenses
 	if update.Message.Text != "" {
-		return app.handlers.HandleExpense(ctx, app.bot, update)
+		return a.handlers.HandleExpense(ctx, a.sender, update)
 	}
 
 	return nil
 }
 
 func main() {
-	app, err := newApplication()
+	app, err := newApp()
 	if err != nil {
 		panic(fmt.Sprintf("failed to initialize application: %v", err))
 	}
-
 	lambda.Start(app.handleRequest)
 }
