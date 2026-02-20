@@ -13,3 +13,6 @@ Makefile
 .DS_Store
 docs
 .claude
+mise.toml
+.tflint.hcl
+.golangci.yml

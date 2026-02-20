@@ -368,4 +368,3 @@ resource "aws_api_gateway_stage" "prod" {
 
   tags = local.common_tags
 }
-

@@ -5,13 +5,13 @@ WORKDIR /build
 COPY go.mod go.sum ./
 
 RUN --mount=type=cache,target=/go/pkg/mod \
-    go mod download
+  go mod download
 
 COPY src/*.go ./
 
 RUN --mount=type=cache,target=/go/pkg/mod \
-    --mount=type=cache,target=/root/.cache/go-build \
-    GOOS=linux GOARCH=arm64 CGO_ENABLED=0 go build -ldflags="-w -s" -tags lambda.norpc -o bootstrap .
+  --mount=type=cache,target=/root/.cache/go-build \
+  GOOS=linux GOARCH=arm64 CGO_ENABLED=0 go build -ldflags="-w -s" -tags lambda.norpc -o bootstrap .
 
 FROM scratch
 

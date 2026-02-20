@@ -1,19 +1,43 @@
-build: ## Build binary for Lambda
-	GOOS=linux GOARCH=arm64 CGO_ENABLED=0 go build -ldflags="-w -s" -tags lambda.norpc -o bootstrap ./src
+BINARY_NAME := worker
+BUILD_DIR := bin
+GO_FILES := $(shell find . -name '*.go' -not -path './vendor/*')
 
-test: ## Run tests
-	go test -v ./...
+GOOS ?= $(shell go env GOOS)
+GOARCH ?= $(shell go env GOARCH)
+LDFLAGS := -ldflags "-s -w"
+TAGS := lambda.norpc
 
-lint: ## Run linter
+.PHONY: build test lint vet fmt fmtcheck clean help
+
+## build: Compile the Lambda binary
+build:
+	@echo "==> Building $(BINARY_NAME)..."
+	@mkdir -p $(BUILD_DIR)
+	CGO_ENABLED=0 go build $(LDFLAGS) -tags $(TAGS) -o $(BUILD_DIR)/$(BINARY_NAME) ./src
+
+## test: Run all tests with coverage
+test:
+	@echo "==> Running tests..."
+	go test -v -race -cover ./...
+
+## lint: Run golangci-lint
+lint:
+	@echo "==> Running linter..."
 	golangci-lint run ./...
 
-vet: ## Run go vet
+## vet: Run go vet
+vet:
+	@echo "==> Running vet..."
 	go vet ./...
 
-fmt: ## Format code
+## fmt: Format code
+fmt:
+	@echo "==> Formatting code..."
 	gofmt -s -l -w .
 
-fmtcheck: ## Check formatting
+## fmtcheck: Check formatting
+fmtcheck:
+	@echo "==> Checking formatting..."
 	@UNFORMATTED=$$(gofmt -s -l .); \
 	if [ -n "$$UNFORMATTED" ]; then \
 		echo "Files not formatted:"; \
@@ -21,9 +45,14 @@ fmtcheck: ## Check formatting
 		exit 1; \
 	fi
 
-check: test lint vet fmtcheck ## Run checks
+## clean: Remove build artifacts
+clean:
+	@echo "==> Cleaning..."
+	@rm -rf $(BUILD_DIR)
+	go clean
 
-help: ## Show available commands
-	@grep -E '^[a-zA-Z_-]+:.*?## .*$$' $(MAKEFILE_LIST) | awk 'BEGIN {FS = ":.*?## "}; {printf "  %-10s %s\n", $$1, $$2}'
-
-.PHONY: test lint vet fmt fmtcheck check help
+## help: Show this help message
+help:
+	@echo "Makefile commands"
+	@echo ""
+	@sed -n 's/^##//p' $(MAKEFILE_LIST) | column -t -s ':' | sed -e 's/^/ /'
