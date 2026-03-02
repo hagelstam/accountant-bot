@@ -44,6 +44,7 @@ runs:
       if: inputs.scan == 'true'
       uses: aquasecurity/trivy-action@0.34.1
       with:
+        version: 'v0.69.2'
         image-ref: ${{ steps.login-ecr.outputs.registry }}/${{ inputs.repository }}:${{ inputs.tag }}
         format: 'table'
         exit-code: '0'
