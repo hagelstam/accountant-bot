@@ -42,7 +42,7 @@ runs:
 
     - name: Scan image for vulnerabilities
       if: inputs.scan == 'true'
-      uses: aquasecurity/trivy-action@0.34.0
+      uses: aquasecurity/trivy-action@0.34.1
       with:
         image-ref: ${{ steps.login-ecr.outputs.registry }}/${{ inputs.repository }}:${{ inputs.tag }}
         format: 'table'
