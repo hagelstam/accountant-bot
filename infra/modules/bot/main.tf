@@ -2,15 +2,12 @@
 resource "aws_ecr_repository" "bot" {
   name                 = local.name_prefix
   image_tag_mutability = "MUTABLE"
-
   image_scanning_configuration {
     scan_on_push = true
   }
-
   encryption_configuration {
     encryption_type = "AES256"
   }
-
   tags = local.common_tags
 }
 
@@ -55,8 +52,8 @@ resource "aws_sqs_queue" "expenses" {
   name                        = "${local.name_prefix}-expenses.fifo"
   fifo_queue                  = true
   content_based_deduplication = true
-  visibility_timeout_seconds  = 180
-  message_retention_seconds   = 86400
+  visibility_timeout_seconds  = 180   // Retries every 3 mins
+  message_retention_seconds   = 86400 // Drops failing messages after 24 hours
 
   tags = local.common_tags
 }
