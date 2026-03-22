@@ -1,18 +1,15 @@
-<div align="center">
-  <img src="./docs/logo.png" height="128px" width="128px"/>
-  <h1>Accountant Bot</h1>
-  <a href="https://github.com/hagelstam/accountant-bot/deployments/prod">
-    <img src="https://github.com/hagelstam/accountant-bot/actions/workflows/deploy.yml/badge.svg" alt="actions" />
-  </a>
-  <a href="https://goreportcard.com/report/hagelstam/accountant-bot">
-    <img src="https://goreportcard.com/badge/hagelstam/accountant-bot" alt="go-report-card" />
-  </a>
-  <a href="https://opensource.org/license/mit">
-    <img src="https://img.shields.io/github/license/hagelstam/accountant-bot.svg" alt="license" />
-  </a>
-</div>
+<p align="center">
+  <img alt="Accountant Bot logo" src="./docs/logo.png" height="128px" />
+  <p align="center">Telegram bot that processes expense messages and updates a personal budget spreadsheet</p>
+</p>
 
-Telegram bot that processes expense messages and updates my personal budget tracking spreadsheet.
+<hr>
+
+<p align="center">
+<a href="https://github.com/hagelstam/accountant-bot/deployments/prod"><img src="https://img.shields.io/github/actions/workflow/status/hagelstam/accountant-bot/deploy.yml?style=for-the-badge" alt="Deploy status"></a>
+<a href="https://opensource.org/license/mit"><img src="https://img.shields.io/github/license/hagelstam/accountant-bot.svg?style=for-the-badge" alt="License"></a>
+<a href="https://goreportcard.com/report/github.com/hagelstam/accountant-bot"><img src="https://goreportcard.com/badge/github.com/hagelstam/accountant-bot?style=for-the-badge" alt="GoReportCard"></a>
+</p>
 
 ## Screenshot
 
