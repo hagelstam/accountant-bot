@@ -30,9 +30,9 @@ runs:
   using: 'composite'
   steps:
     - name: Setup Terraform
-      uses: hashicorp/setup-terraform@v3
+      uses: hashicorp/setup-terraform@v4
       with:
-        terraform_version: 1.14.5
+        terraform_version: 1.14.7
 
     - name: Init
       run: terraform init
@@ -83,7 +83,7 @@ runs:
 
     - name: Post PR comment
       if: inputs.plan-comment == 'true'
-      uses: borchero/terraform-plan-comment@v2
+      uses: borchero/terraform-plan-comment@v3
       with:
         token: ${{ github.token }}
         planfile: tfplan
