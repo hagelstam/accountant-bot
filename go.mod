@@ -6,7 +6,7 @@ require (
 	cloud.google.com/go/auth v0.19.0
 	github.com/aws/aws-lambda-go v1.54.0
 	github.com/go-telegram/bot v1.20.0
-	google.golang.org/api v0.273.0
+	google.golang.org/api v0.274.0
 )
 
 require (
